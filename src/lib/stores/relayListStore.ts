@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 import { db } from "$lib/nostr/db";
-import { fetchNip11 } from "./nip11Store";
+import { fetchNip11, loadNip11 } from "./nip11Store";
 
 export interface RelayListItem {
   url: string;
@@ -42,5 +42,23 @@ export async function fetchRelayList(ndk: any, pubkey: string) {
     await fetchNip11(list.map((i) => i.url));
   } else {
     relayListStore.set([]);
+  }
+}
+
+export async function loadRelayList(pubkey: string) {
+  const entry = await db.kind10002.get(pubkey)
+  if (entry) {
+    const event: any = entry.event
+    const list = (event.tags || [])
+      .filter((t: any[]) => t[0] === "r")
+      .map((t: any[]) => {
+        const m = t[2] || ""
+        return { url: t[1], read: m !== "write", write: m !== "read" }
+      })
+    const hydrated = await hydrate(list)
+    relayListStore.set(hydrated)
+    await loadNip11(list.map((i) => i.url))
+  } else {
+    relayListStore.set([])
   }
 }
