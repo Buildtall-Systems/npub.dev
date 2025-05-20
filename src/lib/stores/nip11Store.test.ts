@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { get } from "svelte/store";
-import { fetchNip11, nip11Store } from "./nip11Store";
+import { fetchNip11, loadNip11, nip11Store } from "./nip11Store";
 import { db } from "$lib/nostr/db";
 
 beforeEach(async () => {
@@ -36,5 +36,11 @@ describe("fetchNip11", () => {
     const entry = await db.nip11.get("https://c");
     expect(entry).toBeUndefined();
     expect(get(nip11Store)["https://c"]).toBeUndefined();
+  });
+
+  it("loads from db", async () => {
+    await db.nip11.put({ url: "https://d", name: "D", icon_url: "i" });
+    await loadNip11(["https://d"]);
+    expect(get(nip11Store)["https://d"].name).toBe("D");
   });
 });

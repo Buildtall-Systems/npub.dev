@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { get } from "svelte/store";
-import { relayListStore, fetchRelayList } from "./relayListStore";
+import { relayListStore, fetchRelayList, loadRelayList } from "./relayListStore";
 import { db } from "$lib/nostr/db";
 
 describe("relayListStore", () => {
@@ -45,5 +45,14 @@ describe("relayListStore", () => {
     const entry = await db.kind10002.get("pk2");
     expect(entry).toBeUndefined();
     expect(get(relayListStore)).toEqual([]);
+  });
+
+  it("loads from cache", async () => {
+    await db.kind10002.put({ pubkey: "pk4", event: { tags: [["r", "wss://a", "read"]] } });
+    await db.nip11.put({ url: "wss://a", name: "A" });
+    await loadRelayList("pk4");
+    expect(get(relayListStore)).toEqual([
+      { url: "wss://a", read: true, write: false, name: "A" },
+    ]);
   });
 });

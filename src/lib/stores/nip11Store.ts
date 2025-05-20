@@ -34,3 +34,17 @@ export async function fetchNip11(urls: string[]) {
     nip11Store.update((s) => ({ ...s, ...entries }));
   }
 }
+
+export async function loadNip11(urls: string[]) {
+  const set = new Set(urls)
+  const entries: Record<string, Nip11Info> = {}
+  for (const url of set) {
+    const item = await db.nip11.get(url)
+    if (item) {
+      entries[url] = { url: item.url, name: item.name, icon_url: item.icon_url }
+    }
+  }
+  if (Object.keys(entries).length) {
+    nip11Store.update((s) => ({ ...s, ...entries }))
+  }
+}
