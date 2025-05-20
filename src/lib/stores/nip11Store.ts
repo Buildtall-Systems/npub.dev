@@ -26,7 +26,9 @@ export async function fetchNip11(urls: string[]) {
       } as const;
       await db.nip11.put(item);
       entries[url] = { url, name: json.name, icon_url: json.icon };
-    } catch {}
+    } catch (error) {
+      console.error(`Failed to fetch or process NIP-11 data for URL: ${url}`, error);
+    }
   }
   if (Object.keys(entries).length) {
     nip11Store.update((s) => ({ ...s, ...entries }));
