@@ -6,6 +6,6 @@ as epics and stories are written, they are to be added to the progress file with
 
 - [ ] Epic 1: Foundation, Authentication, and Core UI Shell
   - [x] 1. Project Initialization & Setup
-  - [ ] 2. Authentication Logic (NIP-07 & NIP-46)
+  - [x] 2. Authentication Logic (NIP-07 & NIP-46)
   - [ ] 3. Core UI Shell Implementation
   - [ ] 4. State Management for Authentication
