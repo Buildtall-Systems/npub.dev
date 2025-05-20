@@ -1,0 +1,6 @@
+{
+  "extends": "@sveltejs/kit/tsconfig",
+  "compilerOptions": {
+    "types": ["vite/client", "@playwright/test"]
+  }
+}
