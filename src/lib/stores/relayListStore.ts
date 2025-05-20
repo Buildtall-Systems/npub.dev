@@ -39,7 +39,7 @@ export async function fetchRelayList(ndk: any, pubkey: string) {
       });
     const hydrated = await hydrate(list);
     relayListStore.set(hydrated);
-    fetchNip11(list.map((i) => i.url));
+    await fetchNip11(list.map((i) => i.url));
   } else {
     relayListStore.set([]);
   }
