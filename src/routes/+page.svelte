@@ -12,7 +12,7 @@ let confirm = false
 let nip46 = ''
 let connected = false
 let json = '{}'
-let viewer: JsonViewer
+let viewer: typeof JsonViewer
 onMount(() => {
   hasNip07 = typeof window !== 'undefined' && (window as any).nostr?.getPublicKey
 })
