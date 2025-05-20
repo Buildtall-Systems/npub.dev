@@ -39,7 +39,12 @@ async function connectNip46() {
 async function continueApp() {
   setAuth(pubkey, npub, signerType)
   connected = true
-  await fetchProfile(pubkey)
+  try {
+    await fetchProfile(pubkey)
+  } catch (error) {
+    console.error('Failed to fetch profile:', error)
+    // Optionally, handle the error further (e.g., show a user-friendly message)
+  }
 }
 function publish() {
   viewer.play()
