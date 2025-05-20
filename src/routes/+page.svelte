@@ -4,6 +4,7 @@ import { nip07GetPubkey, nip46GetPubkey } from '$lib/nostr/auth'
 import { nip19 } from 'nostr-tools'
 import StatusBar from '$lib/components/StatusBar.svelte'
 import JsonViewer from '$lib/components/JsonViewer.svelte'
+import { authStore, setAuth } from '$lib/stores/authStore'
 let hasNip07 = false
 let signerType = ''
 let pubkey = ''
@@ -35,6 +36,7 @@ async function connectNip46() {
   }
 }
 function continueApp() {
+  setAuth(pubkey, npub, signerType)
   connected = true
 }
 function publish() {
@@ -59,7 +61,7 @@ function publish() {
     </div>
   {/if}
 {:else}
-  <StatusBar {npub} {signerType} />
+  <StatusBar npub={$authStore.npub} signerType={$authStore.signerType} />
   <div class="flex h-[calc(100vh-40px)]">
     <div class="flex-1 p-4" data-testid="main-panel">Main</div>
     <JsonViewer bind:this={viewer} {json} />
