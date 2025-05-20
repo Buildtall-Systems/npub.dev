@@ -1,20 +1,21 @@
 {
-  "name": "npub-blog",
+  "name": "npub.dev",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "svelte-kit dev",
-    "build": "svelte-kit build",
-    "preview": "svelte-kit preview",
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "vitest",
     "lint": "prettier --check . && eslint ."
   },
   "devDependencies": {
     "@playwright/test": "^1.42.1",
     "@sveltejs/adapter-static": "^2.0.0",
-    "@sveltejs/kit": "^2.5.10",
-    "@sveltejs/vite-plugin-svelte": "^3.1.0",
+    "@sveltejs/kit": "2.6.0",
+    "@sveltejs/vite-plugin-svelte": "^4.0.0-next.6",
+    "@tailwindcss/postcss": "^4.1.7",
     "@testing-library/svelte": "^4.2.0",
     "@types/node": "^20.5.0",
     "autoprefixer": "^10.4.0",
@@ -34,5 +35,13 @@
     "dexie": "^4.0.4",
     "nostr-tools": "^2.6.2",
     "shadcn-svelte": "^0.1.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@sveltejs/kit"
+    ],
+    "overrides": {
+      "@sveltejs/vite-plugin-svelte": "^4.0.0-next.6"
+    }
   }
 }
