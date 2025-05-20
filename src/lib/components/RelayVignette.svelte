@@ -4,7 +4,7 @@
   export let icon_url = ''
   export let read = false
   export let write = false
-  const initial = (name || url).slice(0, 1).toUpperCase()
+  const initial = (name || url ? (name || url).slice(0, 1).toUpperCase() : '?')
 </script>
 <div class="flex items-center space-x-2" data-testid="relay-vignette">
   {#if icon_url}
