@@ -5,6 +5,7 @@ import { nip19 } from 'nostr-tools'
 import StatusBar from '$lib/components/StatusBar.svelte'
 import JsonViewer from '$lib/components/JsonViewer.svelte'
 import { authStore, setAuth } from '$lib/stores/authStore'
+import { fetchProfile } from '$lib/nostr/profile'
 let hasNip07 = false
 let signerType = ''
 let pubkey = ''
@@ -35,9 +36,10 @@ async function connectNip46() {
     confirm = true
   }
 }
-function continueApp() {
+async function continueApp() {
   setAuth(pubkey, npub, signerType)
   connected = true
+  await fetchProfile(pubkey)
 }
 function publish() {
   viewer.play()
