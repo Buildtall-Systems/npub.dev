@@ -13,11 +13,12 @@ export interface RelayListItem {
 export const relayListStore = writable<RelayListItem[]>([]);
 
 async function hydrate(list: RelayListItem[]) {
-  const res: RelayListItem[] = [];
-  for (const item of list) {
-    const info = await db.nip11.get(item.url);
-    res.push({ ...item, name: info?.name, icon_url: info?.icon_url });
-  }
+  const res = await Promise.all(
+    list.map(async (item) => {
+      const info = await db.nip11.get(item.url);
+      return { ...item, name: info?.name, icon_url: info?.icon_url };
+    })
+  );
   return res;
 }
 
