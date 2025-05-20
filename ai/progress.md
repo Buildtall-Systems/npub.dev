@@ -14,6 +14,6 @@ as epics and stories are written, they are to be added to the progress file with
 - [ ] Epic 2: Relay Data Management (Fetching & Caching)
   - [ ] 1. Dexie.js Setup & Schema Definition
   - [ ] 2. Fetching and Caching Profile Metadata (`kind 0`)
-  - [ ] 3. Fetching and Caching Relay List Metadata (`kind 10002`)
+  - [x] 3. Fetching and Caching Relay List Metadata (`kind 10002`)
   - [ ] 4. Fetching and Caching NIP-11 Relay Information
   - [ ] 5. Data Retrieval Service/Functions
