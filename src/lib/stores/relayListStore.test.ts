@@ -24,6 +24,21 @@ describe("relayListStore", () => {
     ]);
   });
 
+  it("hydrates nip11 info", async () => {
+    await db.nip11.put({ url: "wss://a", name: "A", icon_url: "i" });
+    const ndk = {
+      fetchEvents: async () => [
+        {
+          tags: [["r", "wss://a", "read"]],
+        },
+      ],
+    };
+    await fetchRelayList(ndk, "pk3");
+    expect(get(relayListStore)).toEqual([
+      { url: "wss://a", read: true, write: false, name: "A", icon_url: "i" },
+    ]);
+  });
+
   it("handles missing event", async () => {
     const ndk = { fetchEvents: async () => [] };
     await fetchRelayList(ndk, "pk2");
