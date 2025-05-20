@@ -1,0 +1,150 @@
+# .cursorrules for npub.blog MVP (SvelteKit)
+
+## Expertise Statement
+
+You are an expert in JavaScript, TypeScript, and SvelteKit framework for scalable web development, specifically focused on building decentralized, client-side applications interacting with the Nostr protocol.
+
+## Context
+
+context is king. we need it because AI coding agents have dated memories that are incomplete and not up to date, and they are unaware of this. so every time we use an API or language or anything, we need to ensure we're working with the right interface.
+
+to that end we have a process.
+
+### the context process
+
+upon looking for any context, the process is to reference this file ( ./ai/context.md ). you will look for the library name or key word in the first column. if you find it, proceed through the columns to the right of it untill you see a useful entry. if there are none, you need to halt and ask the operator for help looking up the concept. they will direct you from there.
+
+if you find an entry in the "Context7 ID" column, you may immediately call the `context7` mcp tool "get-library-docs" using the entry you found in that column, and it will return the documents. if you find an entry in the "Local Reference Path" column, you may take that as a relative path from the project root to documentation files on the filesystem. you may use your file reading, grepping, listing, etc tools on this path. sometimes it will contain a repomix file, sometimes it will also have the source code and a readme.md.
+
+if you do not find an entry that matches your search term in the left-most column of the table, you should use the `context7` mcp tool "resolve-library-id" to see if an entry exists. whether it exists or not, you should add a row to the table with that search term in the leftmost column. if it exists in context7, add the library-id to the second column. if it did not exist in context7, add that row and halt after informing the operator of the situation.
+
+## other documents
+
+you may find any other design or spec documents in the ./ai folder. epics can be found under ./ai/epics/
+
+## tool use
+
+always use built in tools, like read, write, list, and frep for files on the filesystem, rather than running random terminal commands. never install packages yourself, you will stopped. just give me the command line in a codeblock so I can copy/paste it.
+
+## Core Architecture Principles (npub.blog Specific)
+
+- **Client-Side Only:** The application MUST be architected as a pure client-side application. All logic, data fetching, storage, and rendering occurs within the user's browser. No backend server specific to this application should be assumed or created.
+- **Local-First:** Prioritize loading data instantly from the local cache (IndexedDB via Dexie.js). Background synchronization should fetch new data without blocking the UI or showing spinners for cached content.
+- **Nostr Focused:** The primary function is reading Nostr long-form content (Kind 30023). Interaction with the Nostr network (fetching events, validating, managing relays) using `nostr-tools` is central.
+- **Performance:** Optimize for an exceptional reading experience. Prioritize instant loads, smooth UI updates, and minimal resource usage. Lazy load images and use placeholders.
+- **Privacy:** Never ask for or handle raw private keys. Support NIP-07/NIP-46 for future signing needs, but MVP is read-only via public identifiers.
+- **Project Documentation:** Supporting documents (PRD, roles.md, epics, etc.) are available in the `./ai` folder within the project repository for further context.
+
+## Key Principles (General SvelteKit)
+
+- Write concise, technical responses with accurate SvelteKit examples.
+- Leverage SvelteKit's capabilities suitable for a **client-side only** application (routing, components, stores). SSR/SSG specific features requiring a Node.js server environment are NOT applicable here.
+- Prioritize performance optimization and minimal JavaScript for optimal user experience.
+- Use descriptive variable names and follow SvelteKit's naming conventions.
+- Organize files using SvelteKit's file-based routing system.
+
+## SvelteKit Project Structure
+
+- Use the recommended SvelteKit project structure:
+  ```
+  - src/
+    - lib/  (Core logic, Nostr interactions, Dexie stores, UI components)
+    - routes/ (Application pages/views)
+    - app.html
+  - static/
+  - svelte.config.js
+  - vite.config.js
+  ```
+
+
+## Technical Stack
+
+- **Framework:** SvelteKit 5
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS (using utility classes directly) with Daisy UI components (optional, use judiciously) and a custom theme configuration.
+- **Local Storage:** IndexedDB via Dexie.js
+- **Nostr Interaction:** NDK (@nostr-dev-kit/ndk) library for relay management and event fetching. `nostr-tools` may be used for specific utility functions (e.g., identifier conversion).
+
+## Comments
+
+- we never write comments on the same line as code
+- we never write comments at all.
+- if you write comments, you'll go in the box
+- no comments!!!!
+
+## Component Development
+
+- always favor shadcn-svelte components, but for when we have custom component needs:
+
+- Create .svelte files for Svelte components.
+- Implement proper component composition and reusability.
+- Use Svelte's props for data passing.
+- Leverage Svelte's reactive declarations (`$:`), and stores (`writable`, `readable`) for state management. Prefer stores for cross-component state.
+
+## Routing and Pages
+
+- Utilize SvelteKit's file-based routing system in the `src/routes/` directory.
+- Implement dynamic routes using `[param]` syntax (e.g., `routes/npub/[pubkey]`, `routes/a/[naddr]`).
+- Use `+page.ts` `load` functions primarily for **client-side** data loading logic triggered on navigation or initial load. Data should be fetched from the Dexie cache first, then potentially trigger background syncs. Avoid server-specific `load` features.
+- Implement proper error handling with `+error.svelte` pages for routing/loading errors not handled gracefully elsewhere.
+
+## Server-Side Rendering (SSR) and Static Site Generation (SSG)
+
+- **NOT APPLICABLE:** This is a client-side only application. Do not implement SSR or SSG features that rely on a server environment. Use `adapter-static` with `fallback: 'index.html'` (or `200.html`) for deployment compatibility.
+
+## Styling with Tailwind CSS
+
+- Integrate Tailwind CSS with SvelteKit (likely already set up).
+- Use Tailwind utility classes extensively in your Svelte components.
+- Leverage Tailwind's responsive design utilities (`sm:`, `md:`, `lg:`, etc.).
+- Utilize Tailwind's color palette and spacing scale for consistency. Apply the specified Dark Mode default.
+- Implement custom theme extensions in `tailwind.config.js` when necessary.
+- Avoid using the `@apply` directive; prefer direct utility classes in HTML markup.
+- Use the Tailwind CSS Typography plugin for styling rendered Markdown content.
+
+## Data Fetching (Client-Side Focus)
+
+- Fetch data from Nostr relays using `nostr-tools` in background processes (e.g., within Svelte stores or dedicated service modules in `src/lib`).
+- Populate and query the local Dexie.js database.
+- UI components should primarily react to changes in local data stores (populated by background sync).
+- Implement proper error handling for relay connections and data fetching operations (mostly silent retries).
+
+## State Management
+
+- Use Svelte stores (`writable`, `readable`) for global/shared state (e.g., user identity, feed content, profiles, relay connection status).
+- Leverage context API for localized state sharing if appropriate, but prefer stores for application-wide data.
+- Implement proper store subscriptions (auto-subscriptions via `$` prefix are preferred) and unsubscriptions if manual subscription is used.
+
+## API Routes
+
+- **NOT APPLICABLE:** Do not create API routes in `src/routes/api/`. The application is purely client-side.
+
+## Testing
+
+- Use Vitest for unit and integration testing of Svelte components, stores, and utility functions.
+- Implement end-to-end testing with Playwright or Cypress, focusing on UI interactions and data display from mock local storage/Nostr events.
+- Mock `nostr-tools` interactions and Dexie.js for testing data logic in isolation.
+
+## Key Conventions
+
+1. Follow the official SvelteKit documentation for best practices and conventions relevant to client-side applications.
+2. Use TypeScript for enhanced type safety and developer experience. Define interfaces for Nostr event kinds (0, 3, 30023, 10002) and Dexie table schemas.
+3. Implement proper error handling (silent retries for background tasks, user-facing toasts for critical issues).
+4. Leverage SvelteKit's asset handling for optimized static asset delivery.
+
+## Documentation Links
+
+- Svelte 5 Runes: https://svelte-5-preview.vercel.app/docs/runes
+- Svelte Documentation: https://svelte.dev/docs
+- SvelteKit Documentation: https://kit.svelte.dev/docs
+- Typescript Docs: https://www.typescriptlang.org/docs/
+- Nostr NIPS: https://github.com/nostr-protocol/nips
+- IndexedDB docs: https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
+- Dexie.js docs: https://dexie.org/docs/
+- TailwindCSS docs: https://tailwindcss.com/docs/installation/using-vite
+- DaisyUI docs: https://daisyui.com/docs/intro/
+
+#### Prohibited patterns  
+* No extra global CSS files beyond `app.css`.  
+* Avoid ad-hoc classes in random CSS; promote widely used rules to Tailwind tokens.  
+* Use `@apply` only when it materially reduces repetition.

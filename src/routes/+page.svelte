@@ -5,11 +5,13 @@ import { nip19 } from 'nostr-tools'
 import StatusBar from '$lib/components/StatusBar.svelte'
 import JsonViewer from '$lib/components/JsonViewer.svelte'
 import { authStore, setAuth } from '$lib/stores/authStore'
+import { Button } from "$lib/components/ui/button"
+import { Input } from "$lib/components/ui/input"
+
 let hasNip07 = false
 let signerType = ''
 let pubkey = ''
 let npub = ''
-let confirm = false
 let nip46 = ''
 let connected = false
 let json = '{}'
@@ -23,7 +25,8 @@ async function connectNip07() {
     signerType = 'NIP-07'
     pubkey = pk
     npub = nip19.npubEncode(pk)
-    confirm = true
+    setAuth(pubkey, npub, signerType)
+    connected = true
   }
 }
 async function connectNip46() {
@@ -32,40 +35,65 @@ async function connectNip46() {
     signerType = 'NIP-46'
     pubkey = pk
     npub = nip19.npubEncode(pk)
-    confirm = true
+    setAuth(pubkey, npub, signerType)
+    connected = true
   }
-}
-function continueApp() {
-  setAuth(pubkey, npub, signerType)
-  connected = true
 }
 function publish() {
   viewer.play()
 }
 </script>
-{#if !connected}
-  {#if !confirm}
-    {#if hasNip07}
-      <button class="m-4 px-4 py-2 bg-neutral-800" on:click={connectNip07}>Use NIP-07</button>
-    {:else}
-      <div class="p-4 space-y-2">
-        <input class="w-full p-2 bg-neutral-800" bind:value={nip46} placeholder="nostrconnect://" />
-        <button class="px-4 py-2 bg-neutral-800" on:click={connectNip46}>Use remote signer</button>
-        <a class="block underline" href="https://getalby.com" target="_blank">Install a browser signer</a>
+
+<div class="min-h-screen flex flex-col">
+  {#if !connected}
+    <div class="flex items-center justify-center min-h-screen bg-background">
+      <div class="w-full max-w-md bg-card rounded-lg shadow-md overflow-hidden border border-primary">
+        {#if hasNip07}
+          <div class="p-6 flex justify-center">
+            <Button variant="default" on:click={connectNip07}>
+              Use NIP-07
+            </Button>
+          </div>
+        {:else}
+          <div class="p-6 space-y-4">
+            <h2 class="text-xl font-bold text-center mb-6 text-foreground">Connect</h2>
+            <div class="space-y-4">
+              <Input
+                type="text"
+                bind:value={nip46}
+                placeholder="nostrconnect://"
+              />
+              <Button variant="default" on:click={connectNip46} class="w-full">
+                Use remote signer
+              </Button>
+              <div class="text-center pt-2">
+                <a 
+                  class="text-accent hover:text-accent-foreground hover:underline transition-colors" 
+                  href="https://getalby.com" 
+                  target="_blank"
+                >
+                  Install a browser signer
+                </a>
+              </div>
+            </div>
+          </div>
+        {/if}
       </div>
-    {/if}
+    </div>
   {:else}
-    <div class="p-4 text-center space-y-2">
-      <p>Continue as {npub}</p>
-      <button class="px-4 py-2 bg-neutral-800" on:click={continueApp}>Continue</button>
+    <StatusBar npub={$authStore.npub} signerType={$authStore.signerType} />
+    <div class="flex flex-1 h-[calc(100vh-88px)]">
+      <div class="flex-1 p-6 m-2 bg-card rounded-l-lg shadow-md border border-border" data-testid="main-panel">
+        <h2 class="text-xl font-semibold mb-4 text-foreground">Main Content</h2>
+        <div class="text-muted-foreground">Content will appear here</div>
+      </div>
+      <JsonViewer bind:this={viewer} {json} />
+    </div>
+    <div class="flex justify-end p-4">
+      <Button variant="default" on:click={publish} data-testid="publish">
+        Publish
+      </Button>
     </div>
   {/if}
-{:else}
-  <StatusBar npub={$authStore.npub} signerType={$authStore.signerType} />
-  <div class="flex h-[calc(100vh-40px)]">
-    <div class="flex-1 p-4" data-testid="main-panel">Main</div>
-    <JsonViewer bind:this={viewer} {json} />
-  </div>
-  <button class="m-4 px-4 py-2 bg-neutral-800" on:click={publish} data-testid="publish">Publish</button>
-{/if}
+</div>
 

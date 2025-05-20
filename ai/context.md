@@ -16,5 +16,6 @@ if you do not find an entry that matches your search term in the left-most colum
 
 | Library Name Searched | Context7 ID | Local Reference Path |
 | --------------------- | ----------- | -------------------- |
-| @nostr-dev-kit/ndk    |             |                      |
-| nostr-tools           |             |                      |
+| @nostr-dev-kit/ndk    | /nostr-dev-kit/ndk |                      |
+| nostr-tools           | /nbd-wtf/nostr-tools |                      |
+| shadcn-svelte         | /huntabyte/shadcn-svelte |        |
