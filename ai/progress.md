@@ -21,7 +21,7 @@ as epics and stories are written, they are to be added to the progress file with
 
 - [ ] Epic 3: Relay List Presentation & Read-Only View
   - [x] 1. Main Relay List Display Area
-  - [ ] 2. Relay Vignette Component
+  - [x] 2. Relay Vignette Component
   - [ ] 3. Empty State Display
   - [ ] 4. Best-Practice Guidance Display
   - [ ] 5. Integration with Core UI Shell
