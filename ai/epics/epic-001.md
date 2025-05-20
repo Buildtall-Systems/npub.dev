@@ -1,0 +1,62 @@
+# Epic 1: Foundation, Authentication, and Core UI Shell
+
+This epic covers the initial project setup (SvelteKit SPA, dependencies), NIP-07/NIP-46 authentication, and the basic three-panel UI structure (status bar, main content area for relay list view/editor, and an always-visible JSON viewer). All features will be developed with corresponding unit, integration, and/or end-to-end tests.
+
+## User Stories / Tasks
+
+### 1. Project Initialization & Setup
+- **Story:** As a Dev, I want a new SvelteKit 2.x project configured for SPA mode with prerendering disabled, so I have the correct baseline for a client-side only application.
+  - **Task:** Initialize SvelteKit project using `pnpm create svelte@latest`.
+  - **Task:** Configure `svelte.config.js` for SPA mode (`adapter-static` with `fallback: 'index.html'`) and disable prerendering for all pages.
+  - **Task:** Install core dependencies: `@nostr-dev-kit/ndk`, `nostr-tools`, `tailwindcss@4.1.7`, `postcss`, `autoprefixer`, `shadcn-svelte`, `dexie@4.x`.
+  - **Task:** Integrate Tailwind CSS: Initialize `tailwind.config.js` and `postcss.config.js`; import Tailwind directives in `app.html` or a root layout CSS.
+  - **Task:** Set up basic project structure: `src/lib/components`, `src/lib/stores`, `src/lib/nostr`, `src/routes`, `static/`.
+  - **Task:** Establish initial Shadcn Svelte CLI configuration if needed.
+  - **Task:** Set up Vitest and Svelte Testing Library for unit/integration tests.
+  - **Task:** Set up Playwright for end-to-end tests, including a basic test to launch the app.
+  - **AC:** App runs in dev mode, builds successfully as a static site, and basic E2E test passes.
+
+### 2. Authentication Logic (NIP-07 & NIP-46)
+- **Story:** As a User, I want the app to detect my NIP-07 browser extension, so I can easily authenticate with my existing Nostr identity.
+  - **Task:** Implement startup logic to detect `window.nostr`.
+  - **Task:** Implement `getPublicKey()` call using NIP-07 if available.
+  - **Task:** *Test (Unit/Integration):* Verify `window.nostr` detection and successful `getPublicKey()` retrieval.
+- **Story:** As a User without a NIP-07 extension, I want to be prompted to use a NIP-46 remote signer or install a browser signer, so I have alternative ways to authenticate.
+  - **Task:** If `window.nostr` is missing, display UI elements offering "Use remote signer (NIP-46)" and "Install a browser signer".
+  - **Task:** Implement an input field for NIP-46 connection string (`nostrconnect://...`).
+  - **Task:** Implement NIP-46 connection logic using NDK or nostr-tools to negotiate with the remote signer and call `getPublicKey()`.
+  - **Task:** *Test (Unit/Integration):* Verify UI for NIP-46 / install prompt appears when `window.nostr` is absent.
+  - **Task:** *Test (E2E):* Simulate NIP-46 flow (mocking the remote signer connection if necessary) to retrieve a public key.
+- **Story:** As a User, after providing my public key (via NIP-07 or NIP-46), I want to see my npub and confirm that I want to continue, so I am sure I'm using the correct identity.
+  - **Task:** Upon successful `getPublicKey()`, display the user's npub and a confirmation button (e.g., "Continue as npub1...").
+  - **Task:** *Test (E2E):* Verify confirmation prompt appears with the correct npub after authentication.
+
+### 3. Core UI Shell Implementation
+- **Story:** As a User, I want to see a persistent status bar displaying my npub and signer type, so I always know my current authentication context.
+  - **Task:** Create a `StatusBar.svelte` component.
+  - **Task:** Display the authenticated user's npub in the status bar.
+  - **Task:** Display the signer type (e.g., "NIP-07", "NIP-46") in the status bar.
+  - **Task:** Implement a placeholder network activity indicator in the status bar (visual only for now).
+  - **Task:** *Test (Component/E2E):* Verify status bar displays correct npub and signer type after authentication.
+- **Story:** As a Dev, I want a defined main content area within the application layout, so there's a clear place for primary page views.
+  - **Task:** Structure `+layout.svelte` or `+page.svelte` to define the main content panel area.
+  - **Task:** Ensure this panel is the central focus of the UI.
+  - **Task:** *Test (E2E):* Verify the main content area is present and visible.
+- **Story:** As a User, I want an always-visible JSON viewer that dynamically displays the raw `kind 10002` event being constructed or edited, so I can see the direct representation of my relay list choices.
+  - **Task:** Create/Update `JsonViewer.svelte` component to be a persistent panel in the UI layout.
+  - **Task:** Ensure the `JsonViewer.svelte` is always visible, not toggleable.
+  - **Task:** The viewer should display pre-formatted JSON, initially showing the fetched `kind 10002` event or a template if none exists.
+  - **Task:** Implement logic for the JSON viewer to dynamically update its displayed JSON in real-time as the user adds/removes/modifies relays in the relay list editor (details of editor interaction in Epic 4).
+  - **Task:** Design and implement a visually appealing animation that plays around or on the JSON viewer when the user clicks "Publish" (publish action itself in Epic 5).
+  - **Task:** *Test (Component/E2E):* Verify the JSON viewer is always visible.
+  - **Task:** *Test (Component/E2E):* Verify the JSON viewer accurately reflects changes made in a mock relay editor state.
+  - **Task:** *Test (Component/E2E):* Verify the publish animation triggers correctly (visual verification).
+
+### 4. State Management for Authentication
+- **Story:** As a Dev, I need to store the user's authentication state (pubkey, signer type, npub), so it can be accessed throughout the application.
+  - **Task:** Create a Svelte store (e.g., `authStore.ts`) to hold `pubkey`, `npub`, and `signerType`.
+  - **Task:** Update the store upon successful authentication and confirmation.
+  - **Task:** Ensure reactive components update based on store changes.
+  - **Task:** *Test (Unit):* Verify store updates correctly and listeners are notified.
+
+Dev: DO NOT ADD COMMENTS. 
