@@ -1,7 +1,8 @@
 <script lang="ts">
 import '../app.css'
+import Shell from '$lib/components/Shell.svelte'
 </script>
 
-<div class="min-h-screen bg-background text-foreground">
+<Shell>
   <slot />
-</div>
+</Shell>

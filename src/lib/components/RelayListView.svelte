@@ -2,6 +2,7 @@
 import { relayListStore } from '$lib/stores/relayListStore'
 import { derived } from 'svelte/store'
 import * as Card from "$lib/components/ui/card"
+import RelayBestPractices from './RelayBestPractices.svelte'
 
 const readRelays = derived(relayListStore, l => l.filter(r => r.read))
 const writeRelays = derived(relayListStore, l => l.filter(r => r.write))
@@ -58,3 +59,7 @@ const hasRelays = derived(relayListStore, l => l.length > 0)
     </Card.Root>
   </div>
 {/if}
+
+<div class="p-4 mt-2">
+  <RelayBestPractices />
+</div>

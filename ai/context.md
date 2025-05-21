@@ -19,3 +19,4 @@ if you do not find an entry that matches your search term in the left-most colum
 | @nostr-dev-kit/ndk    | /nostr-dev-kit/ndk |                      |
 | nostr-tools           | /nbd-wtf/nostr-tools |                      |
 | shadcn-svelte         | /huntabyte/shadcn-svelte |        |
+| SvelteKit             | /sveltejs/kit        |                      |
