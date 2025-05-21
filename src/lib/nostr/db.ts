@@ -1,4 +1,4 @@
-import Dexie, { Table } from "dexie";
+import Dexie from "dexie";
 
 export interface Kind0Entry {
   pubkey: string;
@@ -18,9 +18,9 @@ export interface Nip11Entry {
 }
 
 class NostrDatabase extends Dexie {
-  kind0!: Table<Kind0Entry, string>;
-  kind10002!: Table<Kind10002Entry, string>;
-  nip11!: Table<Nip11Entry, string>;
+  kind0: Dexie.Table<Kind0Entry, string>;
+  kind10002: Dexie.Table<Kind10002Entry, string>;
+  nip11: Dexie.Table<Nip11Entry, string>;
 
   constructor() {
     super("nostr");

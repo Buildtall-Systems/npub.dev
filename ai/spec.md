@@ -21,8 +21,9 @@ A lightweight web client that runs entirely in the browser. It authenticates the
 
 * **@nostr-dev-kit/ndk** – primary client library for relay connections, subscriptions, and publishing.
 * **nostr-tools** – supplemental helpers for event signing or utilities not yet exposed by NDK.
-* **Tailwind CSS 4.1.7** – utility‑first styling framework, integrated via PostCSS.
-* **shadcn‑svelte** *(latest stable)* – headless UI component set for Svelte; confirmed compatible with SvelteKit 2 and Tailwind 4.1.7.
+* **Tailwind CSS 3.3.0** – utility‑first styling framework, integrated via PostCSS.
+* **tailwindcss-animate** – required plugin for Shadcn Svelte animations.
+* **shadcn‑svelte** *(latest stable)* – headless UI component set for Svelte.
 * **NIP‑07 provider** – detect `window.nostr` per the spec.
 * **NIP‑46** – optional module that negotiates a remote signer session if `window.nostr` is missing.
 
@@ -36,7 +37,7 @@ A lightweight web client that runs entirely in the browser. It authenticates the
 2. **Authentication**
 
    * Request `getPublicKey()`.
-   * Show **npub** and ask for explicit confirmation ("Continue as ...").
+   * On successful retrieval of public key, proceed directly to main application view (npub will be displayed in status bar).
 
 3. **Fetch profile metadata**
 

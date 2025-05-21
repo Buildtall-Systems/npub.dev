@@ -4,7 +4,9 @@ import { nip07GetPubkey, nip46GetPubkey } from '$lib/nostr/auth'
 import { nip19 } from 'nostr-tools'
 import StatusBar from '$lib/components/StatusBar.svelte'
 import JsonViewer from '$lib/components/JsonViewer.svelte'
+import RelayListView from '$lib/components/RelayListView.svelte'
 import { authStore, setAuth } from '$lib/stores/authStore'
+import { loadRelayList } from '$lib/stores/relayListStore'
 import { Button } from "$lib/components/ui/button"
 import { Input } from "$lib/components/ui/input"
 
@@ -27,6 +29,7 @@ async function connectNip07() {
     npub = nip19.npubEncode(pk)
     setAuth(pubkey, npub, signerType)
     connected = true
+    loadRelayList(pubkey)
   }
 }
 async function connectNip46() {
@@ -37,6 +40,7 @@ async function connectNip46() {
     npub = nip19.npubEncode(pk)
     setAuth(pubkey, npub, signerType)
     connected = true
+    loadRelayList(pubkey)
   }
 }
 function publish() {
@@ -84,8 +88,8 @@ function publish() {
     <StatusBar npub={$authStore.npub} signerType={$authStore.signerType} />
     <div class="flex flex-1 h-[calc(100vh-88px)]">
       <div class="flex-1 p-6 m-2 bg-card rounded-l-lg shadow-md border border-border" data-testid="main-panel">
-        <h2 class="text-xl font-semibold mb-4 text-foreground">Main Content</h2>
-        <div class="text-muted-foreground">Content will appear here</div>
+        <h2 class="text-xl font-semibold mb-4 text-foreground">Your Relay List</h2>
+        <RelayListView />
       </div>
       <JsonViewer bind:this={viewer} {json} />
     </div>
