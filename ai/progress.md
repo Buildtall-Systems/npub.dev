@@ -25,3 +25,12 @@ as epics and stories are written, they are to be added to the progress file with
   - [x] 3. Empty State Display
   - [x] 4. Best-Practice Guidance Display
   - [ ] 5. Integration with Core UI Shell
+
+- [ ] Epic 4: Relay List Editor Functionality
+  - [x] 1. Add a New Relay to the List
+  - [x] 2. Remove a Relay from the List
+  - [ ] 3. Edit Relay Details (URL and Name)
+  - [ ] 4. Select Read/Write Permissions for Relays
+  - [ ] 5. Load Existing NIP-65 Relay List into Editor
+  - [ ] 6. Save Modified Relay List (Publish NIP-65 Event)
+  - [ ] 7. Discard Changes and Exit Editor
