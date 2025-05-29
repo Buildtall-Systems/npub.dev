@@ -297,7 +297,7 @@
             <p class="text-sm text-muted-foreground">
               To use this tool, please install a browser extension like 
               <a class="text-primary hover:underline" href="https://getalby.com" target="_blank">Alby</a> or 
-              <a class="text-primary hover:underline" href="https://github.com/nostr-protocol/nos2x" target="_blank">nos2x</a>.
+              <a class="text-primary hover:underline" href="https://github.com/fiatjaf/nos2x" target="_blank">nos2x</a>.
             </p>
           </div>
       {/if}
