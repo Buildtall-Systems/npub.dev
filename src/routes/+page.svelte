@@ -9,7 +9,7 @@
 
   import { Button } from "$lib/components/ui/button/index.js";
 
-  type PageStateType = 'idle' | 'authenticating' | 'postAuthenticationDelay' | 'initializingNDK' | 'fetchingRelays' | 'showingRelays' | 'error';
+  type PageStateType = 'idle' | 'authenticating' | 'showingRelays' | 'error';
 
   let hasNip07 = $state(false);
   let ndk = $state<NDK | undefined>(undefined);
@@ -22,8 +22,7 @@
   let displayedRelays = $state<RelayListItem[]>([]);
   let errorMessage = $state<string | null>(null);
 
-  const FETCH_TIMEOUT = 30000; 
-  const ARTIFICIAL_DELAY_MS = 3000; 
+  const FETCH_TIMEOUT = 30000;
 
   $effect(() => {
     console.log('[NPUB_DEV_PAGE_STATE]', {
@@ -86,23 +85,15 @@
     
     setAuth(pk, nip19.npubEncode(pk), 'NIP-07');
     console.log('[NPUB_DEV_PAGE_ACTION] Auth set. Pubkey:', $authStore.pubkey);
-    pageState = 'postAuthenticationDelay'; 
-    await tick();
-
-    console.log(`[NPUB_DEV_PAGE_ACTION] Artificial delay of ${ARTIFICIAL_DELAY_MS}ms starting. pageState: ${pageState}. Spinner should be visible.`);
-    await new Promise(resolve => setTimeout(resolve, ARTIFICIAL_DELAY_MS));
-    console.log('[NPUB_DEV_PAGE_ACTION] Artificial delay ended.');
 
     let localNdk: NDK | undefined;
     try {
-      pageState = 'initializingNDK'; 
-      await tick();
       console.log('[NPUB_DEV_PAGE_ACTION] NDK initialization starting...');
       localNdk = await initializeNDK(); 
       console.log('[NPUB_DEV_PAGE_ACTION] NDK initialized');
     } catch (e) {
       console.log('[NPUB_DEV_PAGE_ACTION] NDK initialization failed in catch block');
-      
+      pageState = 'error';
       await tick();
       return;
     }
@@ -115,8 +106,6 @@
         return;
     }
 
-    pageState = 'fetchingRelays'; 
-    await tick();
     const fetchRelaysPromise = fetchRelayList(localNdk, pk);
     const timeoutPromise = new Promise((_, reject) => 
       setTimeout(() => reject(new Error('Fetching relay lists timed out')), FETCH_TIMEOUT)
@@ -130,6 +119,7 @@
       kind3Relays = result.foundKind3Relays;
       kind10002RelayEvent = result.foundKind10002Event;
       pageState = 'showingRelays';
+      await tick();
 
       if (!kind10002RelayEvent && kind3Relays.length === 0 && displayedRelays.length === 0) {
         errorMessage = `No relay lists (Kind 3 or Kind 10002) found after ${FETCH_TIMEOUT/1000} seconds. You can add relays manually below.`;
@@ -255,17 +245,12 @@
 
 <div class="container mx-auto p-4 max-w-2xl font-sans flex items-center justify-center min-h-screen">
 
-  {#if pageState === 'idle' || (pageState === 'authenticating' && !$authStore.pubkey)}
+  {#if pageState === 'idle'}
     <div class="w-full max-w-md bg-card text-card-foreground rounded-lg shadow-lg p-8 border border-border text-center">
       <h1 class="text-3xl font-bold text-center mb-8 text-foreground">Nostr Relay Manager</h1>
       {#if hasNip07}
-        <Button variant="default" on:click={connectNip07} class="w-full text-lg py-3 h-auto" disabled={pageState === 'authenticating'}>
-          {#if pageState === 'authenticating'}
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            Connecting...
-          {:else}
-            Connect with NIP-07 Extension
-          {/if}
+        <Button variant="default" on:click={connectNip07} class="w-full text-lg py-3 h-auto">
+          Connect with NIP-07 Extension
         </Button>
       {:else}
         <div class="p-4 space-y-3 text-center bg-muted rounded-md">
@@ -279,27 +264,13 @@
       {/if}
     </div>
 
-  {:else if pageState === 'postAuthenticationDelay'}
+  {:else if pageState === 'authenticating'}
     <div class="text-center">
-      <svg class="animate-spin h-16 w-16 text-primary mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-      <h2 class="text-2xl font-semibold text-foreground">Processing Authentication...</h2>
-      <p class="text-muted-foreground">(Please wait...)</p>
+      <svg class="animate-spin h-16 w-16 text-primary mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 818-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 814 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+      <h2 class="text-2xl font-semibold text-foreground">Loading your relays...</h2>
+      <p class="text-muted-foreground">Please wait while we connect and fetch your relay configuration.</p>
     </div>
 
-  {:else if pageState === 'initializingNDK'}
-    <div class="text-center">
-      <svg class="animate-spin h-16 w-16 text-primary mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-      <h2 class="text-2xl font-semibold text-foreground">Initializing Connection...</h2>
-      <p class="text-muted-foreground">(Connecting to Nostr network...)</p>
-    </div>
-
-  {:else if pageState === 'fetchingRelays'}
-    <div class="text-center">
-      <svg class="animate-spin h-16 w-16 text-primary mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-      <h2 class="text-2xl font-semibold text-foreground">Searching for your relay lists...</h2>
-      <p class="text-muted-foreground">(This may take up to {FETCH_TIMEOUT/1000} seconds)</p>
-    </div>
-    
   {:else if pageState === 'showingRelays'}
     <div class="w-full max-w-2xl bg-card text-card-foreground rounded-lg shadow-md p-6 border border-border">
       <div class="flex justify-between items-center mb-6">
