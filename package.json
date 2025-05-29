@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:prod": "NODE_ENV=production vite build",
     "preview": "vite preview",
     "test": "vitest",
     "lint": "prettier --check . && eslint ."
   },
   "devDependencies": {
     "@playwright/test": "^1.42.1",
+    "@sveltejs/adapter-cloudflare": "^7.0.3",
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/kit": "^2.6.0",
     "@sveltejs/vite-plugin-svelte": "^4.0.0-next.6",
@@ -39,7 +41,6 @@
   },
   "dependencies": {
     "@nostr-dev-kit/ndk": "^2.4.0",
-    "dexie": "^4.0.4",
     "nostr-tools": "^2.6.2",
     "shadcn-svelte": "^0.1.0"
   },
