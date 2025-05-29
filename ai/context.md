@@ -20,3 +20,4 @@ if you do not find an entry that matches your search term in the left-most colum
 | nostr-tools           | /nbd-wtf/nostr-tools |                      |
 | shadcn-svelte         | /huntabyte/shadcn-svelte |        |
 | SvelteKit             | /sveltejs/kit        |                      |
+| NIPs                  |             | ./ai/context/nips    |

@@ -240,14 +240,32 @@
 </script>
 
 <svelte:head>
-  <title>Nostr Relay Manager</title>
+  <title>Outbox Enabler</title>
 </svelte:head>
 
 <div class="container mx-auto p-4 max-w-2xl font-sans flex items-center justify-center min-h-screen">
 
   {#if pageState === 'idle'}
     <div class="w-full max-w-md bg-card text-card-foreground rounded-lg shadow-lg p-8 border border-border text-center">
-      <h1 class="text-3xl font-bold text-center mb-8 text-foreground">Nostr Relay Manager</h1>
+      <h1 class="text-3xl font-bold text-center mb-8 text-foreground">Outbox Enabler</h1>
+      
+      <div class="text-left mb-8 space-y-4 text-sm text-muted-foreground">
+        <p class="text-foreground font-medium">Keep Nostr Decentralized</p>
+        <p>
+          This app helps you implement the <a href="https://github.com/nostr-protocol/nips/blob/master/65.md" 
+          target="_blank" class="text-primary hover:underline font-medium">outbox model</a>, 
+          which ensures your notes are discoverable while keeping the network distributed and resilient.
+        </p>
+        <p>
+          For Nostr to remain truly decentralized, we need to know where to find each other's notes. 
+          Without proper relay distribution, we risk creating just a few super-node relays where everyone goes, 
+          defeating the purpose of a distributed network.
+        </p>
+        <p>
+          This app provides a limited selection of relays to get you started. The idea is to get you started with the outbox model, that way app developers can assume most users have configured their outbox. You are welcomed to bring your own relay URLs or even return to the site later to update your choices.
+        </p>
+      </div>
+      
       {#if hasNip07}
         <Button variant="default" on:click={connectNip07} class="w-full text-lg py-3 h-auto">
           Connect with NIP-07 Extension
@@ -325,35 +343,31 @@
           <Button on:click={() => { addRelay(newRelayUrl, true, true); newRelayUrl = ''; }} class="shrink-0 w-full sm:w-auto">Add Relay (R/W)</Button>
         </div>
       
-        {#if !kind10002RelayEvent && kind3Relays.length > 0 && kind3Relays.some(r => !displayedRelays.find(dr => dr.url === r.url))}
-          <div class="my-4 p-3 bg-sky-50 border border-sky-200 rounded-md">
-            <h4 class="text-md font-medium mb-2 text-sky-800">Suggestions from your contacts (Kind 3):</h4>
+        {#if displayedRelays.length < 3 && kind3Relays.length > 0}
+          <div class="my-4 p-3 bg-muted/50 border border-border rounded-md">
+            <h4 class="text-md font-medium mb-2 text-foreground">Suggestions from your contacts (Kind 3):</h4>
             <ul class="flex flex-wrap gap-2">
               {#each kind3Relays as relay (relay.url)}
-                {#if !displayedRelays.find(r => r.url === relay.url)}
-                  <li>
-                    <Button variant="outline" size="sm" class="bg-white hover:bg-sky-100 border-sky-300 text-sky-700" on:click={() => addRelay(relay.url, relay.read, relay.write)}>
-                      + {new URL(relay.url).hostname} <span class="ml-1 text-xs">({relay.read && relay.write ? 'R/W' : (relay.read ? 'R' : 'W')})</span>
-                    </Button>
-                  </li>
-                {/if}
+                <li>
+                  <Button variant="outline" size="sm" class="bg-background hover:bg-muted border-border text-foreground" on:click={() => addRelay(relay.url, relay.read, relay.write)}>
+                    + {new URL(relay.url).hostname} <span class="ml-1 text-xs">({relay.read && relay.write ? 'R/W' : (relay.read ? 'R' : 'W')})</span>
+                  </Button>
+                </li>
               {/each}
             </ul>
           </div>
         {/if}
 
-        {#if displayedRelays.length === 0 && kind3Relays.length === 0 && !kind10002RelayEvent}
-          <div class="my-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
-            <h4 class="text-md font-medium mb-2 text-amber-800">Default Relay Suggestions:</h4>
+        {#if displayedRelays.length < 3 && kind3Relays.length === 0}
+          <div class="my-4 p-3 bg-muted/50 border border-border rounded-md">
+            <h4 class="text-md font-medium mb-2 text-foreground">Default Relay Suggestions:</h4>
             <ul class="flex flex-wrap gap-2">
               {#each defaultRelays as relay (relay.url)}
-                {#if !displayedRelays.find(r => r.url === relay.url)}
-                  <li>
-                    <Button variant="outline" size="sm" class="bg-white hover:bg-amber-100 border-amber-300 text-amber-700" on:click={() => addRelay(relay.url, relay.read, relay.write)}>
-                      + {new URL(relay.url).hostname}
-                    </Button>
-                  </li>
-                {/if}
+                <li>
+                  <Button variant="outline" size="sm" class="bg-background hover:bg-muted border-border text-foreground" on:click={() => addRelay(relay.url, relay.read, relay.write)}>
+                    + {new URL(relay.url).hostname}
+                  </Button>
+                </li>
               {/each}
             </ul>
           </div>
