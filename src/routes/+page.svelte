@@ -42,6 +42,12 @@
     hasNip07 = typeof window !== 'undefined' && (window as any).nostr?.getPublicKey;
   });
 
+  $effect(() => {
+    if (hasNip07 && pageState === 'idle') {
+      // This effect is now empty as the connectButton is removed
+    }
+  });
+
   async function initializeNDK() {
     const nip07Signer = new NDKNip07Signer(FETCH_TIMEOUT - 2000);
     ndk = new NDK({
@@ -239,6 +245,22 @@
 
 </script>
 
+<style>
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  .spinner-simple {
+    width: 64px;
+    height: 64px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+</style>
+
 <svelte:head>
   <title>Outbox Enabler</title>
 </svelte:head>
@@ -267,7 +289,7 @@
       </div>
       
       {#if hasNip07}
-        <Button variant="default" on:click={connectNip07} class="w-full text-lg py-3 h-auto">
+        <Button variant="default" on:click={connectNip07} class="w-full text-lg py-3 h-auto" autofocus>
           Connect with NIP-07 Extension
         </Button>
       {:else}
@@ -284,7 +306,7 @@
 
   {:else if pageState === 'authenticating'}
     <div class="text-center">
-      <svg class="animate-spin h-16 w-16 text-primary mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 818-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 814 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+      <div class="spinner-simple mx-auto mb-4"></div>
       <h2 class="text-2xl font-semibold text-foreground">Loading your relays...</h2>
       <p class="text-muted-foreground">Please wait while we connect and fetch your relay configuration.</p>
     </div>
@@ -392,8 +414,4 @@
     </div>
   {/if}
 </div>
-
-<style>
-  
-</style>
 
