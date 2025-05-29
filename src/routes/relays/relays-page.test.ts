@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render } from '@testing-library/svelte'
+import { render } from '@testing-library/svelte/svelte5'
 import { page } from '$app/stores'
 import RelaysPage from './+page.svelte'
 import * as authStore from '$lib/stores/authStore'
@@ -15,20 +15,24 @@ vi.mock('$app/stores', () => {
 describe('RelaysPage', () => {
   beforeEach(() => {
     vi.spyOn(authStore, 'authStore', 'get').mockReturnValue({
-      subscribe: fn => {
+      subscribe: vi.fn(fn => {
         fn({ pubkey: 'test-pubkey', npub: 'test-npub', signerType: 'test-signer' })
-        return { unsubscribe: () => {} }
-      }
-    })
+        return () => {}
+      }),
+      set: vi.fn(),
+      update: vi.fn()
+    } as any)
     
     vi.spyOn(relayStore, 'relayListStore', 'get').mockReturnValue({
-      subscribe: fn => {
+      subscribe: vi.fn(fn => {
         fn([
           { url: 'wss://relay1.com', read: true, write: false }
         ])
-        return { unsubscribe: () => {} }
-      }
-    })
+        return () => {}
+      }),
+      set: vi.fn(),
+      update: vi.fn()
+    } as any)
   })
 
   it('renders the relay page with RelayListView component', () => {
