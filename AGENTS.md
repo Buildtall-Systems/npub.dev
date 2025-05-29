@@ -16,7 +16,7 @@ This repository contains a client-side only SvelteKit application designed to ma
    - Do not create API routes. The application operates in SPA (client-side only) mode with prerender disabled. SSR and SSG features that require a server environment are out of scope.
    - Use TypeScript throughout and Svelte 5 runes for reactivity.
 2. **Styling**
-   - Tailwind CSS (version 4.1.7 as per `ai/spec.md`) is the styling system. Centralise theme tokens in `tailwind.config.js` and apply classes directly in markup.
+   - Tailwind CSS (version 3.3.0 as per `ai/spec.md`) is the styling system. Centralise theme tokens in `tailwind.config.js` (which now includes the `tailwindcss-animate` plugin) and apply classes directly in markup.
    - Use Shadcn Svelte components (latest stable) for UI building. When adding a new component, list it in `ai/shadcn-components.md` before committing the generated files.
    - Global CSS is prohibited. Component‑specific styles go in `<style>` blocks when necessary.
 3. **Testing**

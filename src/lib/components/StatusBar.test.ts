@@ -1,4 +1,4 @@
-import { render } from "@testing-library/svelte";
+import { render } from "@testing-library/svelte/svelte5";
 import { expect, it } from "vitest";
 import StatusBar from "./StatusBar.svelte";
 

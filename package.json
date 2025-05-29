@@ -12,23 +12,30 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.42.1",
-    "@sveltejs/adapter-static": "^2.0.0",
-    "@sveltejs/kit": "2.6.0",
+    "@sveltejs/adapter-static": "^3.0.1",
+    "@sveltejs/kit": "^2.6.0",
     "@sveltejs/vite-plugin-svelte": "^4.0.0-next.6",
-    "@tailwindcss/postcss": "^4.1.7",
+    "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/svelte": "^4.2.0",
     "@types/node": "^20.5.0",
+    "@vitest/coverage-v8": "^1.6.1",
     "autoprefixer": "^10.4.0",
-    "eslint": "^8.50.0",
+    "bits-ui": "0.22.0",
+    "clsx": "^2.1.1",
+    "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-svelte": "^2.32.1",
+    "jsdom": "^26.1.0",
     "postcss": "^8.4.0",
     "prettier": "^3.0.0",
     "svelte": "^5.0.0-next.0",
-    "tailwindcss": "4.1.7",
+    "tailwind-merge": "^3.3.0",
+    "tailwind-variants": "^1.0.0",
+    "tailwindcss": "^3.3.0",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.4.0",
     "vite": "^5.1.0",
-    "vitest": "^1.1.0"
+    "vitest": "^1.6.1"
   },
   "dependencies": {
     "@nostr-dev-kit/ndk": "^2.4.0",
@@ -41,7 +48,8 @@
       "@sveltejs/kit"
     ],
     "overrides": {
-      "@sveltejs/vite-plugin-svelte": "^4.0.0-next.6"
+      "@sveltejs/vite-plugin-svelte": "^4.0.0-next.6",
+      "svelte": "^5.0.0-next.0"
     }
   }
 }
