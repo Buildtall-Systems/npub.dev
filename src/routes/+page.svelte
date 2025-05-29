@@ -21,6 +21,7 @@
   let kind10002RelayEvent = $state<NDKEvent | null>(null);
   let displayedRelays = $state<RelayListItem[]>([]);
   let errorMessage = $state<string | null>(null);
+  let displayName = $state<string>('');
 
   const FETCH_TIMEOUT = 30000;
 
@@ -112,6 +113,19 @@
         return;
     }
 
+    // Fetch user profile for display name
+    try {
+      const profileFilter = { kinds: [0], authors: [pk], limit: 1 };
+      const profileEvents = await localNdk.fetchEvents(profileFilter);
+      if (profileEvents.size > 0) {
+        const profileEvent = Array.from(profileEvents)[0];
+        const profileData = JSON.parse(profileEvent.content);
+        displayName = profileData.display_name || profileData.name || '';
+      }
+    } catch (e) {
+      console.log('Failed to fetch user profile:', e);
+    }
+
     const fetchRelaysPromise = fetchRelayList(localNdk, pk);
     const timeoutPromise = new Promise((_, reject) => 
       setTimeout(() => reject(new Error('Fetching relay lists timed out')), FETCH_TIMEOUT)
@@ -149,7 +163,6 @@
       await tick();
     }
   }
-
   async function publishKind10002() {
     if (!ndk || !$authStore.pubkey) {
       errorMessage = "Not connected or NDK not initialized.";
@@ -211,7 +224,7 @@
         } else if (relay.read && !relay.write) { 
           return { ...relay, read: false, write: true };
         } else if (!relay.read && relay.write) { 
-          return { ...relay, read: false, write: false };
+          return { ...relay, read: true, write: true };
         } else { 
           return { ...relay, read: true, write: true };
         }
@@ -240,6 +253,7 @@
     kind3Relays = [];
     kind10002RelayEvent = null;
     displayedRelays = [];
+    displayName = '';
     await tick();
   }
 
@@ -314,10 +328,15 @@
   {:else if pageState === 'showingRelays'}
     <div class="w-full max-w-2xl bg-card text-card-foreground rounded-lg shadow-md p-6 border border-border">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-semibold text-foreground">Relay Configuration</h2>
+        <h2 class="text-2xl font-semibold text-foreground">Outbox Relay Configuration</h2>
         <Button variant="outline" size="sm" on:click={handleLogout}>Logout</Button>
       </div>
-      <p class="text-sm text-muted-foreground mb-1">Logged in as: <span class="font-mono text-xs">{$authStore.npub}</span></p>
+      <p class="text-sm text-muted-foreground mb-1">
+        Logged in as: <span class="font-medium">{displayName || $authStore.npub}</span>
+      </p>
+      <div class="text-xs text-muted-foreground mb-4 p-3 bg-muted/30 rounded-md">
+        <p><strong>Relay Types:</strong> <strong>Read</strong> relays are where clients look for your mentions and replies. <strong>Write</strong> relays are where clients publish your notes. <strong>Read/Write</strong> relays do both.</p>
+      </div>
       
       {#if errorMessage && (displayedRelays.length === 0 && !kind10002RelayEvent && !errorMessage.includes('success')) }
         <div class="my-6 p-4 bg-destructive/10 border border-destructive text-destructive-foreground rounded-md text-sm">
@@ -326,7 +345,7 @@
         </div>
       {/if}
 
-      <h3 class="text-xl font-medium mt-6 mb-4 text-foreground">Your Current Relay List</h3>
+      <h3 class="text-xl font-medium mt-6 mb-4 text-foreground">Outbox Relay List</h3>
       {#if displayedRelays.length > 0}
         <ul class="space-y-2 mb-6 border border-border rounded-md p-3 bg-background shadow-sm">
           {#each displayedRelays as relay (relay.url)}
@@ -339,11 +358,10 @@
                 size="sm"
                 class="ml-3 text-xs px-1.5 py-0.5 rounded font-medium w-[70px] text-center shrink-0 transition-colors 
                 {relay.read && relay.write ? 'bg-green-200 text-green-800 hover:bg-green-300' : 
-                 (relay.read ? 'bg-blue-200 text-blue-800 hover:bg-blue-300' : 
-                  (relay.write ? 'bg-purple-200 text-purple-800 hover:bg-purple-300' : 'bg-slate-200 text-slate-800 hover:bg-slate-300'))}"
+                 (relay.read ? 'bg-blue-200 text-blue-800 hover:bg-blue-300' : 'bg-purple-200 text-purple-800 hover:bg-purple-300')}"
                 on:click={() => toggleRelayPermissions(relay.url)}
               >
-                {relay.read && relay.write ? 'R/W' : (relay.read ? 'Read' : (relay.write ? 'Write' : 'None'))}
+                {relay.read && relay.write ? 'R/W' : (relay.read ? 'Read' : 'Write')}
               </Button>
               <Button variant="ghost" size="icon" class="text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-2 shrink-0" on:click={() => removeRelay(relay.url)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -359,7 +377,7 @@
       {/if}
 
       <div class="mt-6 pt-6 border-t border-border">
-        <h3 class="text-xl font-medium mb-4 text-foreground">Add or Update Relays</h3>
+        <h3 class="text-xl font-medium mb-4 text-foreground">Add Relays</h3>
         <div class="flex flex-col sm:flex-row gap-2 mb-4 items-start">
           <input type="url" bind:value={newRelayUrl} placeholder="wss://your.relay.url" class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex-grow" />
           <Button on:click={() => { addRelay(newRelayUrl, true, true); newRelayUrl = ''; }} class="shrink-0 w-full sm:w-auto">Add Relay (R/W)</Button>
@@ -398,7 +416,7 @@
       
       <div class="mt-8 flex justify-end">
         <Button on:click={publishKind10002} size="lg" class="min-w-[200px] h-auto py-3" disabled={isPublishing}>
-          {#if isPublishing}<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...{:else}{kind10002RelayEvent ? 'Update' : 'Publish'} Relay List{/if}
+          {#if isPublishing}<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...{:else}Publish Relay List{/if}
         </Button>
       </div>
       {#if errorMessage && pageState === 'showingRelays' && (displayedRelays.length > 0 || errorMessage.includes('success')) } 
@@ -413,5 +431,4 @@
       <Button on:click={handleLogout} class="mt-6">Go Back</Button>
     </div>
   {/if}
-</div>
-
+</div>  
