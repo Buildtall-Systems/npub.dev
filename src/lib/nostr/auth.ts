@@ -6,12 +6,3 @@ export async function nip07GetPubkey() {
   }
   return null;
 }
-
-export async function nip46GetPubkey(uri: string) {
-  try {
-    const key = uri.replace("nostrconnect://", "").split("@")[0];
-    return key || null;
-  } catch {
-    return null;
-  }
-}

@@ -1,16 +1,16 @@
 <script lang="ts">
 import { authStore } from '$lib/stores/authStore';
 import StatusBar from './StatusBar.svelte';
-import { page } from '$app/stores';
+// import { page } from '$app/stores'; // No longer needed for navigation
 </script>
 
 {#if $authStore.pubkey}
   <div class="min-h-screen flex flex-col bg-background text-foreground">
     <StatusBar npub={$authStore.npub} signerType={$authStore.signerType} />
     
-    <div class="flex flex-1 h-[calc(100vh-88px)]">
-      <aside class="w-56 bg-card border-r border-border p-4 shadow-sm">
-        <nav>
+    <div class="flex flex-1 h-[calc(100vh-44px)]"> <!-- Adjusted height if status bar is ~44px -->
+      <!-- <aside class="w-56 bg-card border-r border-border p-4 shadow-sm"> -->
+        <!-- <nav>
           <ul class="space-y-2">
             <li>
               <a
@@ -30,10 +30,10 @@ import { page } from '$app/stores';
               </a>
             </li>
           </ul>
-        </nav>
-      </aside>
+        </nav> -->
+      <!-- </aside> -->
       
-      <main class="flex-1 overflow-auto">
+      <main class="flex-1 overflow-auto p-4 md:p-6"> <!-- Added some padding to main -->
         <slot />
       </main>
     </div>
