@@ -6,6 +6,7 @@
 
   import { authStore, setAuth } from '$lib/stores/authStore';
   import { fetchRelayList, type RelayListItem } from '$lib/stores/relayListStore';
+  import { logger } from '$lib/logger';
 
   import { Button } from "$lib/components/ui/button/index.js";
 
@@ -26,7 +27,7 @@
   const FETCH_TIMEOUT = 30000;
 
   $effect(() => {
-    console.log('[NPUB_DEV_PAGE_STATE]', {
+    logger.log('[NPUB_DEV_PAGE_STATE]', {
       ts: new Date().toISOString(),
       pageState,
       isPublishing,
@@ -63,7 +64,7 @@
         new Promise((_, reject) => setTimeout(() => reject(new Error('NDK connect timed out')), 5000))
       ]);
     } catch (e: any) {
-      console.error("NDK connection failed or timed out:", e);
+      logger.error("NDK connection failed or timed out:", e);
       errorMessage = `Failed to connect to initial relays: ${e.message}`;
       pageState = 'error';
       ndk = undefined;
@@ -73,7 +74,7 @@
   }
 
   async function connectNip07() {
-    console.log('[NPUB_DEV_PAGE_ACTION] connectNip07 started');
+    logger.log('[NPUB_DEV_PAGE_ACTION] connectNip07 started');
     pageState = 'authenticating'; 
     await tick(); 
     errorMessage = null;
@@ -86,20 +87,20 @@
       errorMessage = "NIP-07: Failed to get public key. Ensure extension is installed, unlocked, and permission granted.";
       pageState = 'error'; 
       await tick();
-      console.log('[NPUB_DEV_PAGE_ACTION] NIP-07 failed to get pubkey');
+      logger.log('[NPUB_DEV_PAGE_ACTION] NIP-07 failed to get pubkey');
       return;
     }
     
     setAuth(pk, nip19.npubEncode(pk), 'NIP-07');
-    console.log('[NPUB_DEV_PAGE_ACTION] Auth set. Pubkey:', $authStore.pubkey);
+    logger.log('[NPUB_DEV_PAGE_ACTION] Auth set. Pubkey:', $authStore.pubkey);
 
     let localNdk: NDK | undefined;
     try {
-      console.log('[NPUB_DEV_PAGE_ACTION] NDK initialization starting...');
+      logger.log('[NPUB_DEV_PAGE_ACTION] NDK initialization starting...');
       localNdk = await initializeNDK(); 
-      console.log('[NPUB_DEV_PAGE_ACTION] NDK initialized');
+      logger.log('[NPUB_DEV_PAGE_ACTION] NDK initialized');
     } catch (e) {
-      console.log('[NPUB_DEV_PAGE_ACTION] NDK initialization failed in catch block');
+      logger.log('[NPUB_DEV_PAGE_ACTION] NDK initialization failed in catch block');
       pageState = 'error';
       await tick();
       return;
@@ -109,7 +110,7 @@
         errorMessage = "NDK instance is not available after initialization. Cannot fetch relays.";
         pageState = 'error';
         await tick();
-        console.log('[NPUB_DEV_PAGE_ACTION] NDK instance null/undefined post-initialization');
+        logger.log('[NPUB_DEV_PAGE_ACTION] NDK instance null/undefined post-initialization');
         return;
     }
 
@@ -123,7 +124,7 @@
         displayName = profileData.display_name || profileData.name || '';
       }
     } catch (e) {
-      console.log('Failed to fetch user profile:', e);
+      logger.log('Failed to fetch user profile:', e);
     }
 
     const fetchRelaysPromise = fetchRelayList(localNdk, pk);
@@ -132,9 +133,9 @@
     );
 
     try {
-      console.log('[NPUB_DEV_PAGE_ACTION] Starting relay fetch (Promise.race)');
+      logger.log('[NPUB_DEV_PAGE_ACTION] Starting relay fetch (Promise.race)');
       const result = await Promise.race([fetchRelaysPromise, timeoutPromise]) as Awaited<ReturnType<typeof fetchRelayList>>;
-      console.log('[NPUB_DEV_PAGE_ACTION] Relay fetch completed, result:', result);
+      logger.log('[NPUB_DEV_PAGE_ACTION] Relay fetch completed, result:', result);
       displayedRelays = result.finalRelays;
       kind3Relays = result.foundKind3Relays;
       kind10002RelayEvent = result.foundKind10002Event;
@@ -152,7 +153,7 @@
       }
 
     } catch (error: any) {
-      console.error("Error during relay fetching or timeout:", error);
+      logger.error("Error during relay fetching or timeout:", error);
       if (error.message.includes('timed out')) {
         errorMessage = `Fetching relay information timed out after ${FETCH_TIMEOUT/1000} seconds. You can try adding relays manually or refresh.`;
       } else {
@@ -193,7 +194,7 @@
       kind10002RelayEvent = event;
       errorMessage = "Relay list published successfully!";
     } catch (e: any) {
-      console.error("Error publishing kind 10002 event:", e);
+      logger.error("Error publishing kind 10002 event:", e);
       errorMessage = `Failed to publish relay list: ${e.message}`;
     } finally {
       isPublishing = false;
@@ -433,4 +434,4 @@
       <Button on:click={handleLogout} class="mt-6">Go Back</Button>
     </div>
   {/if}
-</div>
+</div>  

@@ -3,6 +3,7 @@
   import ButtonComponent from "$lib/components/ui/button/button.svelte";
   import RelayEditorItem from "./RelayEditorItem.svelte";
   import type { RelayListItem } from "$lib/stores/relayListStore";
+  import { logger } from '$lib/logger';
 
   interface EditorRelay extends RelayListItem {
     id: string;
@@ -97,8 +98,8 @@
     );
   }
 
-  function saveChanges() {
-    console.log("Saving relay list:", relays);
+  async function save() {
+    logger.log("Saving relay list:", relays);
   }
 </script>
 
@@ -167,7 +168,7 @@
       
       <div class="pt-4">
         <ButtonComponent 
-          on:click={saveChanges}
+          on:click={save}
           class="w-full"
           disabled={!allRelaysValid}
           data-testid="save-changes-button"

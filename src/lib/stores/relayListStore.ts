@@ -1,5 +1,7 @@
 import { writable } from "svelte/store";
 import type { NDKEvent } from "@nostr-dev-kit/ndk"; // Import NDKEvent type
+import type NDK from '@nostr-dev-kit/ndk';
+import { logger } from '$lib/logger';
 // import { db } from "$lib/nostr/db"; removed
 // import { fetchNip11, loadNip11 } from "./nip11Store"; removed
 
@@ -10,12 +12,18 @@ export interface RelayListItem {
   // name and icon_url will now come directly from NIP-11 fetched in memory if needed, or not at all for simplicity initially.
 }
 
+export interface RelayListResult {
+  finalRelays: RelayListItem[];
+  foundKind3Relays: RelayListItem[];
+  foundKind10002Event: NDKEvent | null;
+}
+
 export const relayListStore = writable<RelayListItem[]>([]); // This store might not be directly used by the page anymore, or used differently
 
 // Removed hydrate function
 
-export async function fetchRelayList(ndk: any, pubkey: string) {
-  console.log("fetchRelayList called with pubkey:", pubkey);
+export async function fetchRelayList(ndk: NDK, pubkey: string): Promise<RelayListResult> {
+  logger.log("fetchRelayList called with pubkey:", pubkey);
 
   let finalRelays: RelayListItem[] = [];
   let foundKind3Relays: RelayListItem[] = [];
@@ -32,7 +40,7 @@ export async function fetchRelayList(ndk: any, pubkey: string) {
   const latestK10002Event = k10002EventsArray.sort((a: NDKEvent, b: NDKEvent) => (b.created_at ?? 0) - (a.created_at ?? 0))[0];
 
   if (latestK10002Event) {
-    console.log("Found Kind 10002 event:", latestK10002Event);
+    logger.log("Found Kind 10002 event:", latestK10002Event);
     foundKind10002Event = latestK10002Event;
     finalRelays = (latestK10002Event.tags || [])
       .filter((t: any[]) => t[0] === "r" && typeof t[1] === 'string')
@@ -53,7 +61,7 @@ export async function fetchRelayList(ndk: any, pubkey: string) {
   const latestK3Event = k3EventsArray.sort((a: NDKEvent, b: NDKEvent) => (b.created_at ?? 0) - (a.created_at ?? 0))[0];
 
   if (latestK3Event && latestK3Event.content) {
-    console.log("Found Kind 3 event:", latestK3Event);
+    logger.log("Found Kind 3 event:", latestK3Event);
     try {
       const parsedContent = JSON.parse(latestK3Event.content);
       for (const url in parsedContent) {
@@ -65,14 +73,14 @@ export async function fetchRelayList(ndk: any, pubkey: string) {
           });
         }
       }
-      console.log("Parsed Kind 3 relays:", foundKind3Relays);
+      logger.log("Parsed Kind 3 relays:", foundKind3Relays);
     } catch (e) {
-      console.error("Error parsing Kind 3 event content:", e);
+      logger.error("Error parsing Kind 3 event content:", e);
     }
   }
 
   if (!foundKind10002Event && foundKind3Relays.length > 0) {
-    console.log("No Kind 10002, using Kind 3 relays as finalRelays");
+    logger.log("No Kind 10002, using Kind 3 relays as finalRelays");
     finalRelays = [...foundKind3Relays];
   }
   

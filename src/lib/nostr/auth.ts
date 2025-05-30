@@ -1,8 +1,23 @@
+import { nip19 } from 'nostr-tools'
+
 export async function nip07GetPubkey() {
-  if (typeof window !== "undefined" && (window as any).nostr?.getPublicKey) {
-    try {
-      return await (window as any).nostr.getPublicKey();
-    } catch {}
+  if (typeof window === 'undefined' || !(window as any).nostr) return null
+
+  let provider: any = (window as any).nostr
+  if (typeof provider.enable === 'function') {
+    provider = await provider.enable()
   }
-  return null;
+
+  if (typeof provider.getPublicKey !== 'function') return null
+
+  const pk = await provider.getPublicKey()
+
+  if (/^[0-9a-f]{64}$/i.test(pk)) return pk
+
+  try {
+    const { data, type } = nip19.decode(pk)
+    return type === 'npub' ? data : null
+  } catch {
+    return null
+  }
 }
