@@ -288,7 +288,7 @@
       <div class="text-left mb-8 space-y-4 text-sm text-muted-foreground">
         <p class="text-foreground font-medium">Keep Nostr Decentralized</p>
         <p>
-          This app helps you implement the <a href="https://github.com/nostr-protocol/nips/blob/master/65.md" 
+          Outbox Enabler sets you up for the <a href="https://github.com/nostr-protocol/nips/blob/master/65.md" 
           target="_blank" class="text-primary hover:underline font-medium">outbox model</a>, 
           which ensures your notes are discoverable while keeping the network distributed and resilient.
         </p>
@@ -298,7 +298,9 @@
           defeating the purpose of a distributed network.
         </p>
         <p>
-          This app provides a limited selection of relays to get you started. The idea is to get you started with the outbox model, that way app developers can assume most users have configured their outbox. You are welcomed to bring your own relay URLs or even return to the site later to update your choices.
+          This app provides a limited selection of relays to get you started. The idea is to get you started
+          with the outbox model, that way app developers can assume most users have configured their outbox.
+          You are welcomed to bring your own relay URLs or even return to the site later to update your choices.
         </p>
       </div>
       
