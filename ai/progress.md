@@ -8,6 +8,8 @@ as epics and stories are written, they are to be added to the progress file with
 
   - [x] 1. Project Initialization & Setup
   - [x] 2. Authentication Logic (NIP-07 & NIP-46)
+    - [x] NIP-07 Extension Support
+    - [x] NIP-46 Remote Signer Support
   - [x] 3. Core UI Shell Implementation
   - [x] 4. State Management for Authentication
 

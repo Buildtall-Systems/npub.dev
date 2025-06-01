@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
-  import { nip07GetPubkey } from '$lib/nostr/auth';
+  import { nip07GetPubkey, nip46GetPubkey } from '$lib/nostr/auth';
   import { nip19 } from 'nostr-tools';
-  import NDK, { NDKNip07Signer, NDKEvent } from '@nostr-dev-kit/ndk';
+  import NDK, { NDKNip07Signer, NDKNip46Signer, NDKEvent } from '@nostr-dev-kit/ndk';
 
   import { authStore, setAuth } from '$lib/stores/authStore';
   import { fetchRelayList, type RelayListItem } from '$lib/stores/relayListStore';
@@ -50,11 +50,11 @@
     }
   });
 
-  async function initializeNDK() {
-    const nip07Signer = new NDKNip07Signer(FETCH_TIMEOUT - 2000);
+  async function initializeNDK(signer?: any) {
+    const defaultSigner = signer || new NDKNip07Signer(FETCH_TIMEOUT - 2000);
     ndk = new NDK({
       explicitRelayUrls: ['wss://relay.damus.io', 'wss://relay.primal.net'],
-      signer: nip07Signer,
+      signer: defaultSigner,
       debug: false,
     });
 
@@ -115,6 +115,121 @@
     }
 
     // Fetch user profile for display name
+    try {
+      const profileFilter = { kinds: [0], authors: [pk], limit: 1 };
+      const profileEvents = await localNdk.fetchEvents(profileFilter);
+      if (profileEvents.size > 0) {
+        const profileEvent = Array.from(profileEvents)[0];
+        const profileData = JSON.parse(profileEvent.content);
+        displayName = profileData.display_name || profileData.name || '';
+      }
+    } catch (e) {
+      logger.log('Failed to fetch user profile:', e);
+    }
+
+    const fetchRelaysPromise = fetchRelayList(localNdk, pk);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Fetching relay lists timed out')), FETCH_TIMEOUT)
+    );
+
+    try {
+      logger.log('[NPUB_DEV_PAGE_ACTION] Starting relay fetch (Promise.race)');
+      const result = await Promise.race([fetchRelaysPromise, timeoutPromise]) as Awaited<ReturnType<typeof fetchRelayList>>;
+      logger.log('[NPUB_DEV_PAGE_ACTION] Relay fetch completed, result:', result);
+      displayedRelays = result.finalRelays;
+      kind3Relays = result.foundKind3Relays;
+      kind10002RelayEvent = result.foundKind10002Event;
+      pageState = 'showingRelays';
+      await tick();
+
+      if (!kind10002RelayEvent && kind3Relays.length === 0 && displayedRelays.length === 0) {
+        errorMessage = `No relay lists (Kind 3 or Kind 10002) found after ${FETCH_TIMEOUT/1000} seconds. You can add relays manually below.`;
+      } else if (!kind10002RelayEvent && kind3Relays.length > 0) {
+        errorMessage = "Found relays in your Kind 3 contact list. You can use these to create or update a Kind 10002 relay list.";
+      } else if (kind10002RelayEvent && displayedRelays.length === 0) {
+        errorMessage = "Found a Kind 10002 relay list, but it appears to be empty. You can add relays to it.";
+      } else if (kind10002RelayEvent) {
+        errorMessage = null; 
+      }
+
+    } catch (error: any) {
+      logger.error("Error during relay fetching or timeout:", error);
+      if (error.message.includes('timed out')) {
+        errorMessage = `Fetching relay information timed out after ${FETCH_TIMEOUT/1000} seconds. You can try adding relays manually or refresh.`;
+      } else {
+        errorMessage = `An error occurred while fetching relay information: ${error.message}`;
+      }
+      pageState = 'error'; 
+    } finally {
+      await tick();
+    }
+  }
+
+  async function connectNip46() {
+    logger.log('[NPUB_DEV_PAGE_ACTION] connectNip46 started');
+    pageState = 'authenticating';
+    await tick();
+    errorMessage = null;
+    kind3Relays = [];
+    kind10002RelayEvent = null;
+    displayedRelays = [];
+
+    const uri = window.prompt('Enter your nostrconnect:// or bunker:// URI:');
+    if (!uri) {
+      pageState = 'idle';
+      return;
+    }
+
+    const pk = await nip46GetPubkey(uri);
+    if (!pk) {
+      errorMessage = "Invalid nostrconnect:// or bunker:// URI format.";
+      pageState = 'error';
+      await tick();
+      logger.log('[NPUB_DEV_PAGE_ACTION] NIP-46 failed to parse pubkey from URI');
+      return;
+    }
+
+    setAuth(pk, nip19.npubEncode(pk), 'NIP-46');
+    logger.log('[NPUB_DEV_PAGE_ACTION] Auth set. Pubkey:', $authStore.pubkey);
+
+    let localNdk: NDK | undefined;
+    try {
+      logger.log('[NPUB_DEV_PAGE_ACTION] NDK initialization starting...');
+      
+      localNdk = new NDK({
+        explicitRelayUrls: ['wss://relay.damus.io', 'wss://relay.primal.net'],
+        debug: false,
+      });
+
+      const nip46Signer = NDKNip46Signer.bunker(localNdk, uri);
+      await nip46Signer.blockUntilReady();
+      
+      localNdk.signer = nip46Signer;
+
+      await Promise.race([
+        localNdk.connect(2000),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('NDK connect timed out')), 5000))
+      ]);
+
+      ndk = localNdk;
+      logger.log('[NPUB_DEV_PAGE_ACTION] NDK initialized');
+    } catch (e: any) {
+      logger.error("NDK connection failed or timed out:", e);
+      errorMessage = `Failed to connect to remote signer or relays: ${e.message}`;
+      pageState = 'error';
+      localNdk = undefined;
+      await tick();
+      return;
+    }
+
+    if (!localNdk) {
+      errorMessage = "NDK instance is not available after initialization. Cannot fetch relays.";
+      pageState = 'error';
+      await tick();
+      logger.log('[NPUB_DEV_PAGE_ACTION] NDK instance null/undefined post-initialization');
+      return;
+    }
+
     try {
       const profileFilter = { kinds: [0], authors: [pk], limit: 1 };
       const profileEvents = await localNdk.fetchEvents(profileFilter);
@@ -309,6 +424,11 @@
         <Button variant="default" on:click={connectNip07} class="w-full text-lg py-3 h-auto" autofocus>
           Connect with NIP-07 Extension
         </Button>
+        <div class="mt-3">
+          <Button variant="default" on:click={connectNip46} class="w-full text-lg py-3 h-auto">
+            Connect with NIP-46 Remote Signer
+          </Button>
+        </div>
       {:else}
         <div class="p-4 space-y-3 text-center bg-muted rounded-md">
             <p class="text-muted-foreground font-medium">NIP-07 compatible extension not found.</p>
@@ -318,6 +438,11 @@
               <a class="text-primary hover:underline" href="https://github.com/fiatjaf/nos2x" target="_blank">nos2x</a>.
             </p>
           </div>
+        <div class="mt-3">
+          <Button variant="default" on:click={connectNip46} class="w-full text-lg py-3 h-auto">
+            Connect with NIP-46 Remote Signer
+          </Button>
+        </div>
       {/if}
     </div>
 

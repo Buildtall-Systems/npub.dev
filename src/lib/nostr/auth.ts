@@ -21,3 +21,18 @@ export async function nip07GetPubkey() {
     return null
   }
 }
+
+export async function nip46GetPubkey(uri: string) {
+  if (!uri.startsWith('nostrconnect://') && !uri.startsWith('bunker://')) return null
+  
+  try {
+    const url = new URL(uri)
+    const pubkey = url.hostname
+    
+    if (/^[0-9a-f]{64}$/i.test(pubkey)) return pubkey
+    
+    return null
+  } catch {
+    return null
+  }
+}
