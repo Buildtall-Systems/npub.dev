@@ -6,6 +6,7 @@
 
   import { authStore, setAuth } from '$lib/stores/authStore';
   import { fetchRelayList, type RelayListItem } from '$lib/stores/relayListStore';
+  import { logout } from '$lib/stores/logout';
   import { logger } from '$lib/logger';
 
   import { Button } from "$lib/components/ui/button/index.js";
@@ -49,6 +50,99 @@
       // This effect is now empty as the connectButton is removed
     }
   });
+
+  $effect(() => {
+    if ($authStore.pubkey && pageState === 'idle') {
+      restoreAuthenticatedState();
+    }
+  });
+
+  async function restoreAuthenticatedState() {
+    pageState = 'authenticating';
+    await tick();
+    errorMessage = null;
+    kind3Relays = [];
+    kind10002RelayEvent = null;
+    displayedRelays = [];
+
+    const pk = $authStore.pubkey;
+    
+    let localNdk: NDK | undefined;
+    try {
+      if ($authStore.signerType === 'NIP-46') {
+        localNdk = new NDK({
+          explicitRelayUrls: ['wss://relay.damus.io', 'wss://relay.primal.net'],
+          debug: false,
+        });
+        await Promise.race([
+          localNdk.connect(2000),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('NDK connect timed out')), 5000))
+        ]);
+      } else {
+        localNdk = await initializeNDK();
+      }
+      ndk = localNdk;
+    } catch (e) {
+      pageState = 'error';
+      errorMessage = 'Failed to restore connection. Please log in again.';
+      await tick();
+      return;
+    }
+
+    if (!localNdk) {
+      errorMessage = "NDK instance is not available after initialization. Cannot fetch relays.";
+      pageState = 'error';
+      await tick();
+      return;
+    }
+
+    try {
+      const profileFilter = { kinds: [0], authors: [pk], limit: 1 };
+      const profileEvents = await localNdk.fetchEvents(profileFilter);
+      if (profileEvents.size > 0) {
+        const profileEvent = Array.from(profileEvents)[0];
+        const profileData = JSON.parse(profileEvent.content);
+        displayName = profileData.display_name || profileData.name || '';
+      }
+    } catch (e) {
+      logger.log('Failed to fetch user profile:', e);
+    }
+
+    const fetchRelaysPromise = fetchRelayList(localNdk, pk);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Fetching relay lists timed out')), FETCH_TIMEOUT)
+    );
+
+    try {
+      const result = await Promise.race([fetchRelaysPromise, timeoutPromise]) as Awaited<ReturnType<typeof fetchRelayList>>;
+      displayedRelays = result.finalRelays;
+      kind3Relays = result.foundKind3Relays;
+      kind10002RelayEvent = result.foundKind10002Event;
+      pageState = 'showingRelays';
+      await tick();
+
+      if (!kind10002RelayEvent && kind3Relays.length === 0 && displayedRelays.length === 0) {
+        errorMessage = `No relay lists (Kind 3 or Kind 10002) found after ${FETCH_TIMEOUT/1000} seconds. You can add relays manually below.`;
+      } else if (!kind10002RelayEvent && kind3Relays.length > 0) {
+        errorMessage = "Found relays in your Kind 3 contact list. You can use these to create or update a Kind 10002 relay list.";
+      } else if (kind10002RelayEvent && displayedRelays.length === 0) {
+        errorMessage = "Found a Kind 10002 relay list, but it appears to be empty. You can add relays to it.";
+      } else if (kind10002RelayEvent) {
+        errorMessage = null; 
+      }
+
+    } catch (error: any) {
+      logger.error("Error during relay fetching or timeout:", error);
+      if (error.message.includes('timed out')) {
+        errorMessage = `Fetching relay information timed out after ${FETCH_TIMEOUT/1000} seconds. You can try adding relays manually or refresh.`;
+      } else {
+        errorMessage = `An error occurred while fetching relay information: ${error.message}`;
+      }
+      pageState = 'error'; 
+    } finally {
+      await tick();
+    }
+  }
 
   async function initializeNDK(signer?: any) {
     const defaultSigner = signer || new NDKNip07Signer(FETCH_TIMEOUT - 2000);
@@ -359,7 +453,7 @@
   let newRelayUrl = $state('');
 
   async function handleLogout() {
-    setAuth('', '', '');
+    logout();
     if (ndk && ndk.pool) {
         ndk.pool.relays.forEach(relay => relay.disconnect());
     }

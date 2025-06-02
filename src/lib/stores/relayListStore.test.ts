@@ -1,58 +1,61 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { get } from "svelte/store";
-import { relayListStore, fetchRelayList, loadRelayList } from "./relayListStore";
-import { db } from "$lib/nostr/db";
+
+const mockLocalStorage = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+};
+
+Object.defineProperty(global, 'localStorage', {
+  value: mockLocalStorage,
+  writable: true
+});
 
 describe("relayListStore", () => {
-  it("stores event and parses relays", async () => {
-    const ndk = {
-      fetchEvents: async () => [
-        {
-          tags: [
-            ["r", "wss://a", "read"],
-            ["r", "wss://b", "write"],
-          ],
-        },
-      ],
-    };
-    await fetchRelayList(ndk, "pk");
-    const entry = await db.kind10002.get("pk");
-    expect(entry?.pubkey).toBe("pk");
-    expect(get(relayListStore)).toEqual([
-      { url: "wss://a", read: true, write: false },
-      { url: "wss://b", read: false, write: true },
-    ]);
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.resetModules();
   });
 
-  it("hydrates nip11 info", async () => {
-    await db.nip11.put({ url: "wss://a", name: "A", icon_url: "i" });
-    const ndk = {
-      fetchEvents: async () => [
-        {
-          tags: [["r", "wss://a", "read"]],
-        },
-      ],
+  it("saves relays to localStorage after fetch", async () => {
+    mockLocalStorage.getItem.mockReturnValue(null);
+    
+    const mockNdk = {
+      fetchEvents: vi.fn().mockResolvedValue(new Set())
     };
-    await fetchRelayList(ndk, "pk3");
-    expect(get(relayListStore)).toEqual([
-      { url: "wss://a", read: true, write: false, name: "A", icon_url: "i" },
-    ]);
+    
+    const { fetchRelayList } = await import("./relayListStore");
+    
+    await fetchRelayList(mockNdk as any, "pubkey123");
+    
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'npubdev_relays_pubkey123',
+      JSON.stringify([])
+    );
   });
 
-  it("handles missing event", async () => {
-    const ndk = { fetchEvents: async () => [] };
-    await fetchRelayList(ndk, "pk2");
-    const entry = await db.kind10002.get("pk2");
-    expect(entry).toBeUndefined();
+  it("loads relays from localStorage when auth changes", async () => {
+    const storedRelays = [{ url: "wss://relay.test", read: true, write: true }];
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify(storedRelays));
+    
+    const { relayListStore } = await import("./relayListStore");
+    const { setAuth } = await import("./authStore");
+    
+    setAuth("pubkey123", "npub123", "NIP-07");
+    
+    expect(get(relayListStore)).toEqual(storedRelays);
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('npubdev_relays_pubkey123');
+  });
+
+  it("clears relays when auth is cleared", async () => {
+    mockLocalStorage.getItem.mockReturnValue(null);
+    
+    const { relayListStore } = await import("./relayListStore");
+    const { clearAuth } = await import("./authStore");
+    
+    clearAuth();
+    
     expect(get(relayListStore)).toEqual([]);
-  });
-
-  it("loads from cache", async () => {
-    await db.kind10002.put({ pubkey: "pk4", event: { tags: [["r", "wss://a", "read"]] } });
-    await db.nip11.put({ url: "wss://a", name: "A" });
-    await loadRelayList("pk4");
-    expect(get(relayListStore)).toEqual([
-      { url: "wss://a", read: true, write: false, name: "A" },
-    ]);
   });
 });

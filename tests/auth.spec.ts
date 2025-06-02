@@ -34,3 +34,20 @@ test("nip46 button shows and prompts for URI", async ({ page }) => {
   await page.getByRole("button", { name: /connect with nip-46 remote signer/i }).click();
   await expect(page.getByText(/loading your relays/i)).toBeVisible();
 });
+
+test("persists login state after page reload", async ({ page }) => {
+  const validHexPubkey = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+  
+  await page.addInitScript(() => {
+    (window as any).nostr = { getPublicKey: async () => "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef" };
+  });
+  
+  await page.goto("/");
+  await page.getByRole("button", { name: /connect with nip-07 extension/i }).click();
+  
+  await expect(page.getByText(/loading your relays/i)).toBeVisible();
+  
+  await page.reload();
+  
+  await expect(page.getByText(/loading your relays/i)).toBeVisible();
+});

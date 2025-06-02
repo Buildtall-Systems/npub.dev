@@ -2,6 +2,7 @@ import { writable } from "svelte/store";
 import type { NDKEvent } from "@nostr-dev-kit/ndk"; // Import NDKEvent type
 import type NDK from '@nostr-dev-kit/ndk';
 import { logger } from '$lib/logger';
+import { authStore } from './authStore';
 // import { db } from "$lib/nostr/db"; removed
 // import { fetchNip11, loadNip11 } from "./nip11Store"; removed
 
@@ -20,7 +21,36 @@ export interface RelayListResult {
 
 export const relayListStore = writable<RelayListItem[]>([]); // This store might not be directly used by the page anymore, or used differently
 
-// Removed hydrate function
+function getRelayKey(pubkey: string): string {
+  return `npubdev_relays_${pubkey}`;
+}
+
+function loadRelaysFromStorage(pubkey: string): RelayListItem[] {
+  if (!pubkey) return [];
+  const stored = localStorage.getItem(getRelayKey(pubkey));
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function saveRelaysToStorage(pubkey: string, relays: RelayListItem[]) {
+  if (!pubkey) return;
+  localStorage.setItem(getRelayKey(pubkey), JSON.stringify(relays));
+}
+
+authStore.subscribe((auth) => {
+  if (auth.pubkey) {
+    const storedRelays = loadRelaysFromStorage(auth.pubkey);
+    relayListStore.set(storedRelays);
+  } else {
+    relayListStore.set([]);
+  }
+});
 
 export async function fetchRelayList(ndk: NDK, pubkey: string): Promise<RelayListResult> {
   logger.log("fetchRelayList called with pubkey:", pubkey);
@@ -84,10 +114,16 @@ export async function fetchRelayList(ndk: NDK, pubkey: string): Promise<RelayLis
     finalRelays = [...foundKind3Relays];
   }
   
-  // Update the global store (optional, page now manages its own state)
-  // relayListStore.set(finalRelays);
+  saveRelaysToStorage(pubkey, finalRelays);
+  relayListStore.set(finalRelays);
 
   return { finalRelays, foundKind3Relays, foundKind10002Event };
+}
+
+export function clearRelaysForPubkey(pubkey: string) {
+  if (pubkey) {
+    localStorage.removeItem(getRelayKey(pubkey));
+  }
 }
 
 // Removed loadRelayList function
