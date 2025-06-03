@@ -12,6 +12,8 @@ export async function nip07GetPubkey() {
 
   const pk = await provider.getPublicKey()
 
+  if (!pk || typeof pk !== 'string') return null
+
   if (/^[0-9a-f]{64}$/i.test(pk)) return pk
 
   try {

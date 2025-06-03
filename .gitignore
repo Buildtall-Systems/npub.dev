@@ -4,3 +4,4 @@ build
 playwright-report
 coverage
 npubdev.txt
+playwright/
