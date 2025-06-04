@@ -145,7 +145,20 @@
   }
 
   async function initializeNDK(signer?: any) {
-    const defaultSigner = signer || new NDKNip07Signer(FETCH_TIMEOUT - 2000);
+    const defaultSigner = signer || new NDKNip07Signer();
+    
+    try {
+      await Promise.race([
+        defaultSigner.user(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Signer readiness timed out')), 10000))
+      ]);
+    } catch (e: any) {
+      logger.error("Signer failed to become ready:", e);
+      errorMessage = `Failed to initialize signer: ${e.message}`;
+      pageState = 'error';
+      throw e;
+    }
+
     ndk = new NDK({
       explicitRelayUrls: ['wss://relay.damus.io', 'wss://relay.primal.net'],
       signer: defaultSigner,

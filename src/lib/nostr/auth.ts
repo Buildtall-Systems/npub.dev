@@ -8,17 +8,17 @@ export async function nip07GetPubkey() {
     provider = await provider.enable()
   }
 
-  if (typeof provider.getPublicKey !== 'function') return null
-
-  const pk = await provider.getPublicKey()
-
-  if (!pk || typeof pk !== 'string') return null
-
-  if (/^[0-9a-f]{64}$/i.test(pk)) return pk
+  if (!provider || typeof provider.getPublicKey !== 'function') return null
 
   try {
+    const pk = await provider.getPublicKey()
+
+    if (!pk || typeof pk !== 'string' || pk.length === 0) return null
+
+    if (/^[0-9a-f]{64}$/i.test(pk)) return pk
+
     const { data, type } = nip19.decode(pk)
-    return type === 'npub' ? data : null
+    return (type === 'npub' && data && typeof data === 'string') ? data : null
   } catch {
     return null
   }

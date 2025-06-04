@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "build:prod": "NODE_ENV=production VITE_ENABLE_LOGGING=false vite build",
+    "build:prod": "NODE_ENV=production vite build",
     "preview": "vite preview",
     "test": "vitest",
     "lint": "prettier --check . && eslint ."
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@nostr-dev-kit/ndk": "^2.4.0",
-    "nostr-tools": "^2.6.2",
+    "nostr-tools": "2.13.0",
     "shadcn-svelte": "^0.1.0"
   },
   "pnpm": {

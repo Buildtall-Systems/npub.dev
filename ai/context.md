@@ -21,3 +21,5 @@ if you do not find an entry that matches your search term in the left-most colum
 | shadcn-svelte         | /huntabyte/shadcn-svelte |        |
 | SvelteKit             | /sveltejs/kit        |                      |
 | NIPs                  |             | ./ai/context/nips    |
+| workerd               | /cloudflare/workerd  |                      |
+| NixOS                 | /nixos/nixpkgs       |                      |
