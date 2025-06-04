@@ -4,8 +4,12 @@ export async function nip07GetPubkey() {
   if (typeof window === 'undefined' || !(window as any).nostr) return null
 
   let provider: any = (window as any).nostr
+  
   if (typeof provider.enable === 'function') {
-    provider = await provider.enable()
+    const enabledProvider = await provider.enable()
+    if (enabledProvider) {
+      provider = enabledProvider
+    }
   }
 
   if (!provider || typeof provider.getPublicKey !== 'function') return null
