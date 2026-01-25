@@ -47,3 +47,16 @@
 - Added settings to navigation bar
 - Dashboard shows onboarding banner for incomplete setup
 - All 6 phases implemented, build passes
+
+### New User Onboarding (No Existing npub) - COMPLETE
+- Created `src/lib/utils/browser.ts` - browser detection (Chrome, Firefox, Safari, Edge, mobile)
+- Created `src/lib/data/extensions.ts` - browser-specific extension recommendations (Alby, nos2x)
+- Added shadcn-svelte dialog component for modal wizard
+- Created `GetStartedModal.svelte` - multi-step wizard:
+  - Step 1: Browser-aware extension recommendations with store links
+  - Step 2: Polling for window.nostr detection (auto-advances when installed)
+  - Step 3: Ready to connect confirmation
+  - Safari/mobile users directed to NIP-46 remote signer path
+- Updated landing page with "New to Nostr? Get Started" button
+- Modal opens wizard, completion triggers existing NIP-07 auth flow
+- Build passes

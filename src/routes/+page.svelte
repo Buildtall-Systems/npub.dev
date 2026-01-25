@@ -10,12 +10,14 @@
   import { logger } from "$lib/logger";
 
   import { Button } from "$lib/components/ui/button/index.js";
+  import GetStartedModal from "$lib/components/GetStartedModal.svelte";
 
   type PageStateType = "idle" | "authenticating" | "error";
 
   let hasNip07 = $state(false);
   let pageState = $state<PageStateType>("idle");
   let errorMessage = $state<string | null>(null);
+  let showGetStarted = $state(false);
 
   $effect(() => {
     if ($authStore.pubkey && pageState === "idle") {
@@ -181,28 +183,30 @@
       </div>
 
       {#if hasNip07}
-        <Button variant="default" on:click={connectNip07} class="w-full text-lg py-3 h-auto" autofocus>
+        <Button variant="default" onclick={connectNip07} class="w-full text-lg py-3 h-auto" autofocus>
           Connect with NIP-07 Extension
         </Button>
         <div class="mt-3">
-          <Button variant="outline" on:click={connectNip46} class="w-full text-lg py-3 h-auto">
+          <Button variant="outline" onclick={connectNip46} class="w-full text-lg py-3 h-auto">
             Connect with NIP-46 Remote Signer
           </Button>
         </div>
       {:else}
-        <div class="p-4 space-y-3 text-center bg-muted rounded-md mb-3">
-          <p class="text-muted-foreground font-medium">NIP-07 compatible extension not found.</p>
-          <p class="text-sm text-muted-foreground">
-            To use this tool, please install a browser extension like
-            <a class="text-primary hover:underline" href="https://getalby.com" target="_blank">Alby</a>
-            or
-            <a class="text-primary hover:underline" href="https://github.com/fiatjaf/nos2x" target="_blank"
-              >nos2x</a
-            >.
-          </p>
-        </div>
-        <Button variant="default" on:click={connectNip46} class="w-full text-lg py-3 h-auto">
+        <Button variant="default" onclick={connectNip46} class="w-full text-lg py-3 h-auto">
           Connect with NIP-46 Remote Signer
+        </Button>
+
+        <div class="relative my-6">
+          <div class="absolute inset-0 flex items-center">
+            <span class="w-full border-t border-border"></span>
+          </div>
+          <div class="relative flex justify-center text-xs uppercase">
+            <span class="bg-card px-2 text-muted-foreground">or</span>
+          </div>
+        </div>
+
+        <Button variant="outline" onclick={() => showGetStarted = true} class="w-full text-lg py-3 h-auto">
+          New to Nostr? Get Started
         </Button>
       {/if}
     </div>
@@ -216,7 +220,20 @@
     <div class="text-center max-w-md">
       <h2 class="text-2xl font-semibold text-destructive mb-4">Connection Failed</h2>
       <p class="text-destructive-foreground mb-6">{errorMessage || "Unknown error."}</p>
-      <Button on:click={resetError}>Try Again</Button>
+      <Button onclick={resetError}>Try Again</Button>
     </div>
   {/if}
 </div>
+
+<GetStartedModal
+  bind:open={showGetStarted}
+  onComplete={() => {
+    showGetStarted = false;
+    connectNip07();
+  }}
+  onClose={() => showGetStarted = false}
+  onNip46={() => {
+    showGetStarted = false;
+    connectNip46();
+  }}
+/>
