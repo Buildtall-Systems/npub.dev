@@ -2,6 +2,24 @@
 
 ## 2026-01-25
 
+### Dashboard Enhancement - COMPLETE
+- Created `DashboardProfileHero.svelte` - profile hero component for dashboard
+- Enhanced `ProfileCard.svelte` - added showActions prop and onEditClick callback
+- Refactored dashboard to hero + 3-card layout (Relays, Following, NIP-05)
+- Hero displays avatar, banner, bio, website, lightning address, quick stats
+- Empty state shows placeholder with prominent "Create Profile" CTA
+- Profile card removed from grid (now in hero section)
+- Dark mode compatible, responsive layout
+- Build passes
+
+### Header Avatar Dropdown - COMPLETE
+- Added shadcn-svelte dropdown-menu component
+- Created `AvatarDropdown.svelte` - shows user avatar, dropdown with Profile/Settings/Logout
+- Integrated into layout navbar (right side)
+- Removed Settings from main nav links (now in dropdown)
+- Removed Settings/Logout buttons from dashboard header
+- Build passes
+
 ### Phase 1: Route Structure & State Management - COMPLETE
 - Created `src/lib/stores/nostrState.ts` - comprehensive store for kind 0/3/10002
 - Created `/dashboard` route with adaptive status cards

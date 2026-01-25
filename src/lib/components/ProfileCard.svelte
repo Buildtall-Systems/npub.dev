@@ -1,7 +1,15 @@
 <script lang="ts">
   import type { ProfileMetadata } from "$lib/nostr/profile";
+  import { Button } from "$lib/components/ui/button/index.js";
 
-  let { profile, npub }: { profile: ProfileMetadata; npub: string } = $props();
+  interface Props {
+    profile: ProfileMetadata;
+    npub: string;
+    showActions?: boolean;
+    onEditClick?: () => void;
+  }
+
+  let { profile, npub, showActions = false, onEditClick }: Props = $props();
 
   let displayName = $derived(profile.display_name || profile.name || npub?.slice(0, 20) + "...");
 </script>
@@ -63,4 +71,12 @@
       </span>
     {/if}
   </div>
+
+  {#if showActions}
+    <div class="pt-4 border-t border-border">
+      <Button variant="outline" size="sm" onclick={onEditClick}>
+        Edit Profile
+      </Button>
+    </div>
+  {/if}
 </div>

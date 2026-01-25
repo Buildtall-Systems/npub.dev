@@ -4,7 +4,7 @@
   import { authStore } from "$lib/stores/authStore";
   import type { Snippet } from "svelte";
 
-  import { Button } from "$lib/components/ui/button/index.js";
+  import AvatarDropdown from "$lib/components/AvatarDropdown.svelte";
 
   let { children }: { children: Snippet } = $props();
 
@@ -13,11 +13,9 @@
 
   const navLinks = [
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/profile", label: "Profile" },
     { href: "/relays", label: "Relays" },
     { href: "/identity", label: "Identity" },
     { href: "/discover", label: "Discover" },
-    { href: "/settings", label: "Settings" },
   ];
 </script>
 
@@ -42,6 +40,7 @@
             {/each}
           </div>
         </div>
+        <AvatarDropdown npub={$authStore.npub || ""} />
       </div>
 
       <div class="sm:hidden pb-3 flex flex-wrap gap-1">
