@@ -132,8 +132,8 @@
 </svelte:head>
 
 <div class="container mx-auto p-4 max-w-4xl">
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold text-foreground">Dashboard</h1>
+  <div class="mb-6 sm:mb-8">
+    <h1 class="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
     <p class="text-sm text-muted-foreground mt-1">
       Welcome back, {displayName || $authStore.npub?.slice(0, 20) + "..."}
     </p>
@@ -171,7 +171,7 @@
         onEditProfile={handleEditProfile}
       />
 
-      <div class="grid gap-4 md:grid-cols-3">
+      <div class="grid gap-3 sm:gap-4 md:grid-cols-3">
         <Card.Root>
           <Card.Header>
             <Card.Title class="flex items-center gap-2">

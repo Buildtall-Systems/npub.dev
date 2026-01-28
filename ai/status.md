@@ -20,6 +20,15 @@
 - Removed Settings/Logout buttons from dashboard header
 - Build passes
 
+### Mobile Responsive Improvements - COMPLETE
+- DashboardProfileHero: stack avatar/name vertically on mobile, smaller avatar (w-20 vs w-24)
+- DashboardProfileHero: full-width buttons on mobile, stacked stats row
+- DashboardProfileHero: reduced banner height on mobile (h-32 vs h-40)
+- Dashboard: smaller title on mobile (text-2xl vs text-3xl)
+- Dashboard: tighter card grid gap on mobile (gap-3 vs gap-4)
+- NIP-05 truncation on mobile to prevent overflow
+- Build passes
+
 ### Phase 1: Route Structure & State Management - COMPLETE
 - Created `src/lib/stores/nostrState.ts` - comprehensive store for kind 0/3/10002
 - Created `/dashboard` route with adaptive status cards

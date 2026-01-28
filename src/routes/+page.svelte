@@ -42,7 +42,7 @@
     const pk = await nip07GetPubkey();
     if (!pk) {
       errorMessage =
-        "NIP-07: Failed to get public key. Ensure extension is installed, unlocked, and permission granted.";
+        "NIP-07: Failed to get public key. Ensure extension is installed, unlocked, permission granted, and has an identity configured.";
       pageState = "error";
       await tick();
       return;

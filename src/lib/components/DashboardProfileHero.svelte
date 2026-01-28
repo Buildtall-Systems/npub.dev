@@ -23,7 +23,7 @@
 <div class="rounded-xl border border-border bg-card overflow-hidden">
   {#if hasProfile && profile}
     {#if profile.banner}
-      <div class="w-full h-40 bg-muted">
+      <div class="w-full h-32 sm:h-40 bg-muted">
         <img
           src={profile.banner}
           alt="Banner"
@@ -31,34 +31,34 @@
         />
       </div>
     {:else}
-      <div class="w-full h-24 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20"></div>
+      <div class="w-full h-20 sm:h-24 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20"></div>
     {/if}
 
-    <div class="p-6 -mt-12">
-      <div class="flex items-end gap-4 mb-4">
+    <div class="p-4 sm:p-6 -mt-10 sm:-mt-12">
+      <div class="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4 mb-4">
         {#if profile.picture}
           <img
             src={profile.picture}
             alt={displayName}
-            class="w-24 h-24 rounded-full object-cover border-4 border-card shadow-lg"
+            class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-card shadow-lg shrink-0"
           />
         {:else}
           <div
-            class="w-24 h-24 rounded-full bg-muted border-4 border-card shadow-lg flex items-center justify-center text-3xl font-bold text-muted-foreground"
+            class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-muted border-4 border-card shadow-lg flex items-center justify-center text-2xl sm:text-3xl font-bold text-muted-foreground shrink-0"
           >
             {displayName.charAt(0).toUpperCase()}
           </div>
         {/if}
 
-        <div class="flex-1 min-w-0 pb-1">
-          <h2 class="text-2xl font-bold text-foreground truncate">{displayName}</h2>
-          <div class="flex items-center gap-2 text-sm text-muted-foreground">
+        <div class="flex-1 min-w-0 sm:pb-1">
+          <h2 class="text-xl sm:text-2xl font-bold text-foreground truncate">{displayName}</h2>
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
             {#if profile.name && profile.display_name && profile.name !== profile.display_name}
               <span>@{profile.name}</span>
-              <span>·</span>
+              <span class="hidden sm:inline">·</span>
             {/if}
             {#if profile.nip05}
-              <span class="text-primary font-mono">{profile.nip05}</span>
+              <span class="text-primary font-mono truncate max-w-[200px] sm:max-w-none">{profile.nip05}</span>
             {/if}
           </div>
         </div>
@@ -91,7 +91,7 @@
         {/if}
       </div>
 
-      <div class="flex items-center justify-between pt-4 border-t border-border">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-border">
         <div class="flex items-center gap-6 text-sm">
           <div>
             <span class="font-semibold text-foreground">{followCount}</span>
@@ -102,35 +102,35 @@
             <span class="text-muted-foreground ml-1">Relays</span>
           </div>
         </div>
-        <Button variant="outline" size="sm" onclick={onEditProfile}>
+        <Button variant="outline" size="sm" class="w-full sm:w-auto" onclick={onEditProfile}>
           Edit Profile
         </Button>
       </div>
     </div>
   {:else}
-    <div class="w-full h-32 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20"></div>
+    <div class="w-full h-28 sm:h-32 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20"></div>
 
-    <div class="p-6 -mt-12">
-      <div class="flex items-end gap-4 mb-4">
+    <div class="p-4 sm:p-6 -mt-10 sm:-mt-12">
+      <div class="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4 mb-4">
         <div
-          class="w-24 h-24 rounded-full bg-muted border-4 border-card shadow-lg flex items-center justify-center"
+          class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-muted border-4 border-card shadow-lg flex items-center justify-center shrink-0"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground sm:w-10 sm:h-10"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
         </div>
 
-        <div class="flex-1 min-w-0 pb-1">
-          <h2 class="text-2xl font-bold text-foreground">Welcome to npub.dev!</h2>
+        <div class="flex-1 min-w-0 sm:pb-1">
+          <h2 class="text-xl sm:text-2xl font-bold text-foreground">Welcome to npub.dev!</h2>
           <p class="text-sm text-muted-foreground">
             Create your profile to get started on Nostr
           </p>
         </div>
       </div>
 
-      <p class="text-sm text-muted-foreground mb-6">
+      <p class="text-sm text-muted-foreground mb-4 sm:mb-6">
         Your profile helps others discover you on the Nostr network. Add a name, picture, and bio to introduce yourself.
       </p>
 
-      <div class="flex items-center justify-between pt-4 border-t border-border">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-border">
         <div class="flex items-center gap-6 text-sm text-muted-foreground">
           <div>
             <span class="font-semibold">{followCount}</span>
@@ -141,7 +141,7 @@
             <span class="ml-1">Relays</span>
           </div>
         </div>
-        <Button onclick={onEditProfile}>
+        <Button class="w-full sm:w-auto" onclick={onEditProfile}>
           Create Profile
         </Button>
       </div>
