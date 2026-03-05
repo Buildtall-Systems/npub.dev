@@ -155,7 +155,7 @@
             </Card.Description>
           </div>
           {#if !isEditing && hasProfile}
-            <Button variant="outline" size="sm" on:click={() => (isEditing = true)}>
+            <Button variant="outline" size="sm" onclick={() => (isEditing = true)}>
               Edit
             </Button>
           {/if}
@@ -185,7 +185,7 @@
         {:else}
           <div class="text-center py-8">
             <p class="text-muted-foreground mb-4">You haven't set up your profile yet.</p>
-            <Button on:click={() => (isEditing = true)}>Create Profile</Button>
+            <Button onclick={() => (isEditing = true)}>Create Profile</Button>
           </div>
         {/if}
       </Card.Content>

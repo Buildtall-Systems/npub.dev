@@ -215,7 +215,7 @@
         <h2 class="text-2xl font-semibold text-foreground">Outbox Relay Configuration</h2>
         <div class="flex gap-2">
           <Button variant="outline" size="sm" href="/dashboard">Dashboard</Button>
-          <Button variant="outline" size="sm" on:click={handleLogout}>Logout</Button>
+          <Button variant="outline" size="sm" onclick={handleLogout}>Logout</Button>
         </div>
       </div>
 
@@ -261,7 +261,7 @@
                   : relay.read
                     ? 'bg-blue-200 text-blue-800 hover:bg-blue-300'
                     : 'bg-purple-200 text-purple-800 hover:bg-purple-300'}"
-                on:click={() => toggleRelayPermissions(relay.url)}
+                onclick={() => toggleRelayPermissions(relay.url)}
               >
                 {relay.read && relay.write ? "R/W" : relay.read ? "Read" : "Write"}
               </Button>
@@ -269,7 +269,7 @@
                 variant="ghost"
                 size="icon"
                 class="text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-2 shrink-0"
-                on:click={() => removeRelay(relay.url)}
+                onclick={() => removeRelay(relay.url)}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -308,7 +308,7 @@
             class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex-grow"
           />
           <Button
-            on:click={() => {
+            onclick={() => {
               addRelay(newRelayUrl, true, true);
               newRelayUrl = "";
             }}
@@ -328,7 +328,7 @@
                     variant="outline"
                     size="sm"
                     class="bg-background hover:bg-muted border-border text-foreground"
-                    on:click={() => addRelay(relay.url, relay.read, relay.write)}
+                    onclick={() => addRelay(relay.url, relay.read, relay.write)}
                   >
                     + {new URL(relay.url).hostname}
                     <span class="ml-1 text-xs"
@@ -351,7 +351,7 @@
                     variant="outline"
                     size="sm"
                     class="bg-background hover:bg-muted border-border text-foreground"
-                    on:click={() => addRelay(relay.url, relay.read, relay.write)}
+                    onclick={() => addRelay(relay.url, relay.read, relay.write)}
                   >
                     + {new URL(relay.url).hostname}
                   </Button>
@@ -364,7 +364,7 @@
 
       <div class="mt-8 flex justify-end">
         <Button
-          on:click={publishKind10002}
+          onclick={publishKind10002}
           size="lg"
           class="min-w-[200px] h-auto py-3"
           disabled={isPublishing}

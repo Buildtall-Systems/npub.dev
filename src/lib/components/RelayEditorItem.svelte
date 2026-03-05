@@ -1,58 +1,70 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
   import InputComponent from "$lib/components/ui/input/input.svelte";
   import ButtonComponent from "$lib/components/ui/button/button.svelte";
 
-  export let url: string = "";
-  export let name: string = "";
-  export let read: boolean = true;
-  export let write: boolean = true;
+  let {
+    url = "",
+    name = "",
+    read = true,
+    write = true,
+    onremove,
+    onurlchange,
+    onnamechange,
+    onreadchange,
+    onwritechange,
+    onvaliditychange,
+  }: {
+    url?: string;
+    name?: string;
+    read?: boolean;
+    write?: boolean;
+    onremove?: () => void;
+    onurlchange?: (url: string) => void;
+    onnamechange?: (name: string) => void;
+    onreadchange?: (read: boolean) => void;
+    onwritechange?: (write: boolean) => void;
+    onvaliditychange?: (isValid: boolean) => void;
+  } = $props();
 
-  const dispatch = createEventDispatcher();
-
-  let urlError = "";
-  let isValid = true;
+  let urlError = $state("");
 
   function validateUrl(value: string) {
     if (value && !value.startsWith("wss://") && !value.startsWith("ws://")) {
       urlError = "Invalid URL. Must start with wss:// or ws://";
-      isValid = false;
+      onvaliditychange?.(false);
+      return false;
     } else {
       urlError = "";
-      isValid = true;
+      onvaliditychange?.(true);
+      return true;
     }
-    dispatch("validityChange", isValid);
-    return isValid;
   }
 
-  function handleUrlChange(e: Event) {
+  function handleUrlInput(e: Event) {
     const value = (e.target as HTMLInputElement).value;
     validateUrl(value);
-    dispatch("urlChange", value);
+    onurlchange?.(value);
   }
 
-  function handleUrlBlur(e: Event) {
-    const value = (e.target as HTMLInputElement).value;
-    validateUrl(value);
+  function handleUrlBlur() {
+    validateUrl(url);
   }
 
-  function handleNameChange(e: Event) {
-    dispatch("nameChange", (e.target as HTMLInputElement).value);
+  function handleNameInput(e: Event) {
+    onnamechange?.((e.target as HTMLInputElement).value);
   }
 
   function handleReadChange(e: Event) {
-    dispatch("readChange", (e.target as HTMLInputElement).checked);
+    onreadchange?.((e.target as HTMLInputElement).checked);
   }
 
   function handleWriteChange(e: Event) {
-    dispatch("writeChange", (e.target as HTMLInputElement).checked);
+    onwritechange?.((e.target as HTMLInputElement).checked);
   }
 
-  function handleRemove() {
-    dispatch("remove");
-  }
-
-  $: validateUrl(url);
+  $effect(() => {
+    validateUrl(url);
+  });
 </script>
 
 <div class="flex flex-col space-y-2 p-4 border border-neutral-700 rounded-md bg-neutral-900">
@@ -63,8 +75,8 @@
         <InputComponent 
           id="relay-url" 
           value={url} 
-          on:input={handleUrlChange}
-          on:blur={handleUrlBlur}
+          oninput={handleUrlInput}
+          onblur={handleUrlBlur}
           placeholder="wss://relay.example.com"
           class={urlError ? "border-red-500" : ""}
         />
@@ -80,7 +92,7 @@
         <InputComponent 
           id="relay-name" 
           value={name} 
-          on:input={handleNameChange} 
+          oninput={handleNameInput} 
           placeholder="Friendly name"
         />
       </div>
@@ -93,7 +105,7 @@
         type="checkbox" 
         id="read-checkbox" 
         checked={read} 
-        on:change={handleReadChange}
+        onchange={handleReadChange}
         class="rounded border-neutral-600 text-primary h-4 w-4"
       />
       <label for="read-checkbox" class="text-sm">Read</label>
@@ -104,7 +116,7 @@
         type="checkbox" 
         id="write-checkbox" 
         checked={write} 
-        on:change={handleWriteChange}
+        onchange={handleWriteChange}
         class="rounded border-neutral-600 text-primary h-4 w-4"
       />
       <label for="write-checkbox" class="text-sm">Write</label>
@@ -114,7 +126,7 @@
       <ButtonComponent 
         variant="destructive" 
         size="sm" 
-        on:click={handleRemove}
+        onclick={onremove}
         class="h-8 px-2"
         data-testid="remove-relay-button"
       >
@@ -122,4 +134,4 @@
       </ButtonComponent>
     </div>
   </div>
-</div> 
+</div>
