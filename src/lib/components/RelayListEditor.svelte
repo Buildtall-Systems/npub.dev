@@ -10,13 +10,13 @@
     isValid?: boolean;
   }
 
-  let relays: EditorRelay[] = [];
-  let newRelayUrl = "";
-  let newRelayName = "";
-  let urlError = "";
+  let relays: EditorRelay[] = $state([]);
+  let newRelayUrl = $state("");
+  let newRelayName = $state("");
+  let urlError = $state("");
   let nextId = 1;
 
-  $: allRelaysValid = relays.every(relay => relay.isValid !== false) && !urlError;
+  let allRelaysValid = $derived(relays.every(relay => relay.isValid !== false) && !urlError);
 
   function generateId(): string {
     return `relay-${nextId++}`;
@@ -32,15 +32,14 @@
     }
   }
 
-  function handleUrlChange(e: Event) {
+  function handleUrlInput(e: Event) {
     const value = (e.target as HTMLInputElement).value;
     newRelayUrl = value;
     validateUrl(value);
   }
 
-  function handleUrlBlur(e: Event) {
-    const value = (e.target as HTMLInputElement).value;
-    validateUrl(value);
+  function handleUrlBlur() {
+    validateUrl(newRelayUrl);
   }
 
   function addRelay() {
@@ -113,8 +112,8 @@
         <InputComponent 
           id="new-relay-url" 
           value={newRelayUrl} 
-          on:input={handleUrlChange}
-          on:blur={handleUrlBlur}
+          oninput={handleUrlInput}
+          onblur={handleUrlBlur}
           placeholder="wss://relay.example.com"
           class={urlError ? "border-red-500" : ""}
         />
@@ -134,7 +133,7 @@
       
       <div>
         <ButtonComponent 
-          on:click={addRelay} 
+          onclick={addRelay} 
           class="w-full"
           disabled={!!urlError || !newRelayUrl}
           data-testid="add-relay-button"
@@ -156,19 +155,19 @@
             name={relay.name || ""}
             read={relay.read}
             write={relay.write}
-            on:remove={() => removeRelay(relay.id)}
-            on:urlChange={(e) => updateRelayUrl(relay.id, e.detail)}
-            on:nameChange={(e) => updateRelayName(relay.id, e.detail)}
-            on:readChange={(e) => updateRelayRead(relay.id, e.detail)}
-            on:writeChange={(e) => updateRelayWrite(relay.id, e.detail)}
-            on:validityChange={(e) => updateRelayValidity(relay.id, e.detail)}
+            onremove={() => removeRelay(relay.id)}
+            onurlchange={(url) => updateRelayUrl(relay.id, url)}
+            onnamechange={(name) => updateRelayName(relay.id, name)}
+            onreadchange={(read) => updateRelayRead(relay.id, read)}
+            onwritechange={(write) => updateRelayWrite(relay.id, write)}
+            onvaliditychange={(isValid) => updateRelayValidity(relay.id, isValid)}
           />
         {/each}
       </div>
       
       <div class="pt-4">
         <ButtonComponent 
-          on:click={save}
+          onclick={save}
           class="w-full"
           disabled={!allRelaysValid}
           data-testid="save-changes-button"
@@ -184,4 +183,4 @@
       </p>
     </div>
   {/if}
-</div> 
+</div>
